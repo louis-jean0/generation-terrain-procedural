@@ -9,7 +9,7 @@ LIBS += -fopenmp
 DEFINES += "WM_LABEL_SIZE=32"
 
 unix {
-    LIBS *= -lQGLViewer-qt5
+    LIBS *= -lQGLViewer
     LIBS *= -lpng
 
     INCLUDEPATH *= src/third-party/glad/include
