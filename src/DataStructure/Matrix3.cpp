@@ -88,7 +88,7 @@ Matrix3<int> Matrix3<int>::skeletonize() const
 }
 
 template<>
-std::vector<BSpline> Matrix3<int>::skeletonizeToBSplines() const
+std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
 {
     Matrix3<int> initial = ((Matrix3<float>)*this).binarize(0.5f);
     skeleton_tracer_t* skel = new skeleton_tracer_t();
@@ -180,6 +180,19 @@ std::vector<BSpline> Matrix3<int>::skeletonizeToBSplines() const
         splines = merged;
     }
     return splines;
+}
+
+template<>
+Matrix3<float> Matrix3<float>::fillWithBSplines(std::vector<BSpline> splines) const {
+    Matrix3<float> newImage(this->getDimensions());
+    newImage.raiseErrorOnBadCoord = false;
+    for (auto& spline : splines) {
+        for (auto& point : spline.resamplePoints(10000)) {
+            newImage.at(point) = 255;
+        }
+    }
+    newImage.raiseErrorOnBadCoord = true;
+    return newImage;
 }
 
 template<>

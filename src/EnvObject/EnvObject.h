@@ -55,7 +55,6 @@ public:
 
     float height;
 
-
     std::string name;
     std::string s_FittingFunction;
     std::function<float(Vector3)> fittingFunction;

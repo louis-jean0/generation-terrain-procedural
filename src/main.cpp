@@ -540,6 +540,28 @@ int main(int argc, char *argv[])
             setenv(key.c_str(), val.c_str(), 1);
 //        }
     }
+
+
+    /* Unit test fillWithBSplines
+    BSpline spline1 = BSpline({
+        Vector3(0, 0, 0),
+        Vector3(20, 40, 0),
+        Vector3(40, 20, 0),
+        Vector3(60, 60, 0),
+        Vector3(80, 30, 0),
+        Vector3(100, 70, 0),
+        Vector3(120, 50, 0),
+        Vector3(140, 90, 0),
+        Vector3(160, 60, 0),
+        Vector3(180, 100, 0),
+        Vector3(200, 80, 0)
+    });    
+    std::vector<BSpline> splines = {spline1};
+    const int imgSize = 500;
+    GridF img(Vector3{imgSize, imgSize, imgSize}, 0.f);
+    img = img.fillWithBSplines(splines);
+    Plotter::get()->addImage(img)->setNormalizedModeImage(true)->exec();
+    */
     //OpenFoamParser::createSimulationFile("OpenFOAM/simple", GridF());
     //return 0;
 
@@ -1768,7 +1790,7 @@ int main(int argc, char *argv[])
     */
 
     /*
-     * Unit test: Resampling the paths on BSplines
+    Unit test: Resampling the paths on BSplines
     BSpline curve({
         Vector3(0, 0, 0),
         Vector3(1, 0, 0),

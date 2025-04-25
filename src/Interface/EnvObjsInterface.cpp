@@ -72,6 +72,14 @@ void EnvObjsInterface::affectTerrains(std::shared_ptr<Heightmap> heightmap, std:
         this->previewCurrentEnvObjectPlacement(clickPos);
     });
 
+    // Segfault pour l'instant, à voir plus tard, d'abord affichage
+    // QObject::connect(Plotter::get("Material"), &Plotter::movedOnImage, this, [&](const Vector3& clickPos, const Vector3& _prevPos, QMouseEvent* _event) {
+    //     // if (!this->isVisible()) return;
+    //     // if (!previewingObjectInPlotter) return;
+    //     std::cout<<"ON EST LA"<<std::endl;
+    //     this->previewCurrentEnvObjectPlacement(clickPos);
+    // });
+
     QObject::connect(Plotter::get("Focus"), &Plotter::movedOnImage, this, [&](const Vector3& mousePos, const Vector3& prevPos, QMouseEvent* event) {
         // if (!this->isVisible()) return;
         // if (!this->focusAreaEditing) return;
@@ -1007,6 +1015,7 @@ void EnvObjsInterface::displayProbas(std::string objectName)
         Plotter::get("Object Preview")->addImage(score);
     }
     Plotter::get("Object Preview")->show();
+    std::cout<<"======================= DISPLAY PROBAS IS CALLED ==========================="<<std::endl;
     dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(score);
     Q_EMIT updated();
 }
@@ -1014,11 +1023,37 @@ void EnvObjsInterface::displayProbas(std::string objectName)
 void EnvObjsInterface::displayMaterialDistrib(std::string materialName)
 {
     GridF distribution = EnvObject::materials[materialName].currentState;
-    Plotter::get("Material")->addImage(distribution);
-    Plotter::get("Material")->show();
-    dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
+    if(materialName == "caca") {
+        std::cout<<"DEADCORAL MATERIAL CHECK"<<std::endl;
+        auto polylines = distribution.skeletonizeToBSplines();
+        std::cout<<"POLYLINES SIZE: "<<polylines.size()<<std::endl;
+        polylines[0].toString();
+        GridF polylinesImage(distribution.getDimensions());
+        // for(auto& line : polylines) {
+        //     line = line.resamplePoints(10);
+        // }
+        polylinesImage.fillWithBSplines(polylines);
+        Plotter::get("Material")->addImage(polylinesImage);
+        Plotter::get("Material")->show();
+    }
+    else {
+        GridF distribution = EnvObject::materials[materialName].currentState;
+        Plotter::get("Material")->addImage(distribution);
+        Plotter::get("Material")->show();
+        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
+    }
+    //Plotter::get()->exec();
     Q_EMIT updated();
 }
+
+// void EnvObjsInterface::displayMaterialDistrib(std::string materialName)
+// {
+//     GridF distribution = EnvObject::materials[materialName].currentState;
+//     Plotter::get("Material")->addImage(distribution);
+//     Plotter::get("Material")->show();
+//     dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
+//     Q_EMIT updated();
+// }
 
 /*void EnvObjsInterface::displaySedimentsDistrib()
 {
