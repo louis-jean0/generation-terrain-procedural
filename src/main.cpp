@@ -541,6 +541,44 @@ int main(int argc, char *argv[])
 //        }
     }
 
+    /* Unit test skeletonizeToBSplines */
+    // Diagonal
+    const int imgSize = 500;
+    GridF testGrid(Vector3{imgSize, imgSize, 1}, 0.0f);
+    const int thickness = 10;
+    for (int i = 0; i < imgSize - 2*thickness; ++i) {
+        for (int dx = -thickness; dx <= thickness; ++dx) {
+            for (int dy = -thickness; dy <= thickness; ++dy) {
+                int x = i + dx;
+                int y = i + dy;
+                if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
+                    testGrid.addValueAt(1.0f, x, y, 0.0f);
+                }
+            }
+        }
+    }
+    // Circle
+    const int centerX = imgSize * (1. / 2.) + 100;
+    const int centerY = imgSize * (1. / 2.) - 50;
+    const int radius = 50;
+    const int circleThickness = 10;
+    for (int x = centerX - radius - circleThickness; x <= centerX + radius + circleThickness; ++x) {
+        for (int y = centerY - radius - circleThickness; y <= centerY + radius + circleThickness; ++y) {
+            if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
+                float distance = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                if (std::abs(distance - radius) <= circleThickness) {
+                    testGrid.addValueAt(1.0f, x, y, 0.0f);
+                }
+            }
+        }
+    }
+    Plotter::get()->addImage(testGrid)->setNormalizedModeImage(true)->exec();
+    std::vector<BSpline> polylines = testGrid.skeletonizeToBSplines();
+    std::cout<<"NUMBER OF GENERATED POLYLINES : "<<polylines.size()<<std::endl;
+    auto testPolyline = testGrid.fillWithBSplines(polylines);
+    std::cout<<"SAVING TEST POLYLINES IMAGE"<<std::endl;
+    //testPolyline.toImageRGB("test_polylines.png");
+    Plotter::get()->addImage(testPolyline)->setNormalizedModeImage(true)->exec();
 
     /* Unit test fillWithBSplines
     BSpline spline1 = BSpline({
@@ -555,7 +593,7 @@ int main(int argc, char *argv[])
         Vector3(160, 60, 0),
         Vector3(180, 100, 0),
         Vector3(200, 80, 0)
-    });    
+    });
     std::vector<BSpline> splines = {spline1};
     const int imgSize = 500;
     GridF img(Vector3{imgSize, imgSize, imgSize}, 0.f);

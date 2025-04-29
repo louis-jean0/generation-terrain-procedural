@@ -1023,18 +1023,22 @@ void EnvObjsInterface::displayProbas(std::string objectName)
 void EnvObjsInterface::displayMaterialDistrib(std::string materialName)
 {
     GridF distribution = EnvObject::materials[materialName].currentState;
-    if(materialName == "caca") {
+    if(materialName == "deadcoral") {
+        distribution.normalize();
         std::cout<<"DEADCORAL MATERIAL CHECK"<<std::endl;
+        Plotter::get("Material")->addImage(distribution);
+        Plotter::get("Material")->exec();
+        std::cout<<"SAVING DISTRIBUTION IMAGE"<<std::endl;
+        distribution.toImageRGB("test_distribution.png");
+        std::cout<<"PROCESSING SKELETONIZATION"<<std::endl;
         auto polylines = distribution.skeletonizeToBSplines();
         std::cout<<"POLYLINES SIZE: "<<polylines.size()<<std::endl;
         polylines[0].toString();
         GridF polylinesImage(distribution.getDimensions());
-        // for(auto& line : polylines) {
-        //     line = line.resamplePoints(10);
-        // }
         polylinesImage.fillWithBSplines(polylines);
         Plotter::get("Material")->addImage(polylinesImage);
         Plotter::get("Material")->show();
+        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
     }
     else {
         GridF distribution = EnvObject::materials[materialName].currentState;

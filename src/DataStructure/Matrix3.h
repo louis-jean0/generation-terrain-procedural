@@ -179,7 +179,7 @@ public:
 
     Matrix3<int> skeletonize() const;
     std::vector<BSpline> skeletonizeToBSplines() const;
-    Matrix3<float> fillWithBSplines(std::vector<BSpline> splines) const;
+    Matrix3<Vector3> fillWithBSplines(std::vector<BSpline> splines) const;
     Matrix3<T> dilate(bool use2D = false, float t = 1.f) const;
     Matrix3<T> erode(bool use2D = false, float t = 1.f) const;
     Matrix3<int> computeConnectedComponents(bool use4Connect = false) const;
@@ -236,6 +236,7 @@ public:
 
     static Matrix3<Vector3> fromImageRGB(std::string filename);
     static Matrix3<float> fromImageBW(std::string filename);
+    void toImageRGB(const std::string& filename) const;
 
     Matrix3<T> operator-() const;
     template<typename U>
@@ -2936,7 +2937,6 @@ Vector3 Matrix3<T>::getDimensions() const
 {
     return Vector3(this->sizeX, this->sizeY, this->sizeZ);
 }
-
 
 typedef Matrix3<float> GridF;
 typedef Matrix3<int> GridI;

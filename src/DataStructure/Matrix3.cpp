@@ -183,13 +183,15 @@ std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
 }
 
 template<>
-Matrix3<float> Matrix3<float>::fillWithBSplines(std::vector<BSpline> splines) const {
-    Matrix3<float> newImage(this->getDimensions());
+Matrix3<Vector3> Matrix3<float>::fillWithBSplines(std::vector<BSpline> splines) const {
+    Matrix3<Vector3> newImage(this->getDimensions());
     newImage.raiseErrorOnBadCoord = false;
+    int i = 0;
     for (auto& spline : splines) {
         for (auto& point : spline.resamplePoints(10000)) {
-            newImage.at(point) = 255;
+            newImage.at(point) = HSVtoRGB((float)i / splines.size(), 1.0f, 1.0f);
         }
+        i++;
     }
     newImage.raiseErrorOnBadCoord = true;
     return newImage;
@@ -517,6 +519,32 @@ Matrix3<float> Matrix3<float>::fromImageBW(std::string filename)
 
     return map;
 }
+
+template<>
+void Matrix3<float>::toImageRGB(const std::string& filename) const {
+    int width = this->width();
+    int height = this->height();
+    int channels = 3;
+
+    unsigned char* image_data = new unsigned char[width * height * channels];
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int index = (x + y * width) * channels;
+
+            float r = this->at(x, y, 0) * 255.f;
+            float g = this->at(x, y, 0) * 255.f;
+            float b = this->at(x, y, 0) * 255.f;
+
+            image_data[index + 0] = static_cast<unsigned char>(std::clamp(r, 0.f, 255.f));
+            image_data[index + 1] = static_cast<unsigned char>(std::clamp(g, 0.f, 255.f));
+            image_data[index + 2] = static_cast<unsigned char>(std::clamp(b, 0.f, 255.f));
+        }
+    }
+    stbi_write_png(filename.c_str(), width, height, channels, image_data, width * channels);
+    delete[] image_data;
+}
+
 //template<class T>
 Matrix3<float> operator-(const float a, Matrix3<float> b) {
     Matrix3<float> res = b;
