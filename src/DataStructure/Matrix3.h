@@ -212,6 +212,7 @@ public:
     void reset(T newVal = T()) { for (auto& val : data) val = newVal; }
 
     Matrix3<int> binarize(T limitValue = T(), bool greaterValuesAreSetToOne = true, bool useAlsoTheEqualSign = false) const;
+    int computeOtsuThreshold() const; 
     Matrix3<int> binarizeBetween(T minValue, T maxValue, bool insideValuesAreSetToOne = true, bool useAlsoTheEqualSign = false) const;
     Matrix3<int> isosurface(T isovalue = T(), bool ignoreZtopBorder = false, bool ignoreBorders = true) const;
 
@@ -1481,6 +1482,50 @@ Matrix3<int> Matrix3<T>::binarize(T limitValue, bool greaterValuesAreSetToOne, b
         }
     }*/
     return bin;
+}
+
+template<typename T>
+int Matrix3<T>::computeOtsuThreshold() const {
+    std::vector<int> histogram(256, 0);
+    size_t N = this->size();
+
+    // Remplir l'histogramme
+    for (size_t i = 0; i < N; ++i) {
+        int val = static_cast<int>(this->data[i]);
+        val = std::clamp(val, 0, 255);  // sécuriser les bornes
+        histogram[val]++;
+    }
+
+    // Calculs de base
+    std::vector<float> prob(256);
+    for (int i = 0; i < 256; ++i)
+        prob[i] = static_cast<float>(histogram[i]) / N;
+
+    float mu_T = 0.0f;
+    for (int i = 0; i < 256; ++i)
+        mu_T += i * prob[i];
+
+    float max_var = 0.0f;
+    int best_thresh = 0;
+    float omega = 0.0f;
+    float mu = 0.0f;
+
+    for (int t = 0; t < 256; ++t) {
+        omega += prob[t];
+        mu += t * prob[t];
+
+        if (omega == 0 || omega == 1)
+            continue;
+
+        float sigma_b_squared = std::pow(mu_T * omega - mu, 2) / (omega * (1.0f - omega));
+
+        if (sigma_b_squared > max_var) {
+            max_var = sigma_b_squared;
+            best_thresh = t;
+        }
+    }
+
+    return best_thresh;
 }
 
 template<class T>

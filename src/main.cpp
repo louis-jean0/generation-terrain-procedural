@@ -279,7 +279,6 @@ int main(int argc, char *argv[])
     qDebug() << "                    VERSION:      " << (const char*)glGetString(GL_VERSION);
     qDebug() << "                    GLSL VERSION: " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-
     /*
      * C++ implementation of island from curves
      *
@@ -542,43 +541,75 @@ int main(int argc, char *argv[])
     }
 
     /* Unit test skeletonizeToBSplines */
+    // PART WITH GEOMETRY GENERATED IN THE IMAGE
     // Diagonal
-    const int imgSize = 500;
-    GridF testGrid(Vector3{imgSize, imgSize, 1}, 0.0f);
-    const int thickness = 10;
-    for (int i = 0; i < imgSize - 2*thickness; ++i) {
-        for (int dx = -thickness; dx <= thickness; ++dx) {
-            for (int dy = -thickness; dy <= thickness; ++dy) {
-                int x = i + dx;
-                int y = i + dy;
-                if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
-                    testGrid.addValueAt(1.0f, x, y, 0.0f);
-                }
-            }
-        }
-    }
-    // Circle
-    const int centerX = imgSize * (1. / 2.) + 100;
-    const int centerY = imgSize * (1. / 2.) - 50;
-    const int radius = 50;
-    const int circleThickness = 10;
-    for (int x = centerX - radius - circleThickness; x <= centerX + radius + circleThickness; ++x) {
-        for (int y = centerY - radius - circleThickness; y <= centerY + radius + circleThickness; ++y) {
-            if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
-                float distance = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
-                if (std::abs(distance - radius) <= circleThickness) {
-                    testGrid.addValueAt(1.0f, x, y, 0.0f);
-                }
-            }
-        }
-    }
+    // const int imgSize = 500;
+    // GridF testGrid(Vector3{imgSize, imgSize, 1}, 0.0f);
+    // const int thickness = 10;
+    // for (int i = 0; i < imgSize - 2*thickness; ++i) {
+    //     for (int dx = -thickness; dx <= thickness; ++dx) {
+    //         for (int dy = -thickness; dy <= thickness; ++dy) {
+    //             int x = i + dx;
+    //             int y = i + dy;
+    //             if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
+    //                 testGrid.addValueAt(1.0f, x, y, 0.0f);
+    //             }
+    //         }
+    //     }
+    // }
+    // testGrid.normalize();
+    // // Circle
+    // const int centerX = imgSize * (1. / 2.) + 100;
+    // const int centerY = imgSize * (1. / 2.) - 50;
+    // const int radius = 50;
+    // const int circleThickness = 10;
+    // for (int x = centerX - radius - circleThickness; x <= centerX + radius + circleThickness; ++x) {
+    //     for (int y = centerY - radius - circleThickness; y <= centerY + radius + circleThickness; ++y) {
+    //         if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
+    //             float distance = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+    //             if (std::abs(distance - radius) <= circleThickness) {
+    //                 testGrid.addValueAt(1.0f, x, y, 0.0f);
+    //             }
+    //         }
+    //     }
+    // }
+    // // Second circle
+    // const int centerX2 = imgSize * (1. / 2.) - 100;
+    // const int centerY2 = imgSize * (1. / 2.) + 50;
+    // const int radius2 = 25;
+    // const int circleThickness2 = 10;
+    // for (int x = centerX2 - radius2 - circleThickness2; x <= centerX2 + radius2 + circleThickness2; ++x) {
+    //     for (int y = centerY2 - radius2 - circleThickness2; y <= centerY2 + radius2 + circleThickness2; ++y) {
+    //         if (x >= 0 && x < imgSize && y >= 0 && y < imgSize) {
+    //             float distance = std::sqrt((x - centerX2) * (x - centerX2) + (y - centerY2) * (y - centerY2));
+    //             if (std::abs(distance - radius2) <= circleThickness2) {
+    //                 testGrid.addValueAt(1.0f, x, y, 0.0f);
+    //             }
+    //         }
+    //     }
+    // }
+    // PART WITH LOADED IMAGE
+    GridF testGrid = GridF::fromImageBW("test_deadcoral.png");
     Plotter::get()->addImage(testGrid)->setNormalizedModeImage(true)->exec();
-    std::vector<BSpline> polylines = testGrid.skeletonizeToBSplines();
+    std::vector<BSpline> polylines = (testGrid).skeletonizeToBSplines();
+    for (auto& s: polylines) {
+        s = s.simplifyByRamerDouglasPeucker(2.f);
+    }
     std::cout<<"NUMBER OF GENERATED POLYLINES : "<<polylines.size()<<std::endl;
     auto testPolyline = testGrid.fillWithBSplines(polylines);
     std::cout<<"SAVING TEST POLYLINES IMAGE"<<std::endl;
     //testPolyline.toImageRGB("test_polylines.png");
     Plotter::get()->addImage(testPolyline)->setNormalizedModeImage(true)->exec();
+
+    /* Unit test of binarization with Otsu threshold */
+    // GridF testBinarize = GridF::fromImageBW("test_deadcoral.png");
+    // std::cout<<"DISPLAYING ORIGINAL IMAGE"<<std::endl;
+    // Plotter::get()->addImage(testBinarize)->setNormalizedModeImage(true)->exec();
+    // int otsuThreshold = testBinarize.computeOtsuThreshold();
+    // testBinarize = testBinarize.binarize(otsuThreshold);
+    // std::cout<<"DISPLAYING BINARIZED IMAGE WITH OTSU THRESHOLD"<<std::endl;
+    // Plotter::get()->addImage(testBinarize)->setNormalizedModeImage(true)->exec();
+
 
     /* Unit test fillWithBSplines
     BSpline spline1 = BSpline({

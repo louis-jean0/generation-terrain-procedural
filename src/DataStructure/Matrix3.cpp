@@ -90,7 +90,9 @@ Matrix3<int> Matrix3<int>::skeletonize() const
 template<>
 std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
 {
-    Matrix3<int> initial = ((Matrix3<float>)*this).binarize(0.5f);
+    int otsuThreshold = this->computeOtsuThreshold();
+    std::cout<<"OTSU THRESHOLD COMPUTED : "<<otsuThreshold<<std::endl;
+    Matrix3<int> initial = ((Matrix3<float>)*this).binarize(otsuThreshold);
     skeleton_tracer_t* skel = new skeleton_tracer_t();
     skel->W = this->sizeX; // width of image
     skel->H = this->sizeY; // height of image
