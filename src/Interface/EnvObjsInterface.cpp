@@ -559,8 +559,10 @@ EnvObject* EnvObjsInterface::instantiateObjectAtBestPosition(std::string objectN
             return nullptr;
     } else if (objAsCurve) {
         BSpline initialCurve;
-        if (objAsCurve->curveFollow == EnvCurve::SKELETON) {
-            initialCurve = CurveOptimizer::getSkeletonCurve(position, score, gradients, objAsCurve->length);
+        if (objAsCurve->curveFollow == EnvCurve::SNAKE) {
+            initialCurve = CurveOptimizer::getSkeletonCurveWithSnake(position, score, gradients, objAsCurve->length);
+        } else if (objAsCurve->curveFollow == EnvCurve::SKELETON) {
+            initialCurve = CurveOptimizer::getSkeletonCurve(position, score, objAsCurve->length);
         } else if (objAsCurve->curveFollow == EnvCurve::ISOVALUE) {
             initialCurve = CurveOptimizer::followIsolevel(position, score, gradients, objAsCurve->length);
         } else if (objAsCurve->curveFollow == EnvCurve::GRADIENTS) {
@@ -575,7 +577,7 @@ EnvObject* EnvObjsInterface::instantiateObjectAtBestPosition(std::string objectN
         curve.resamplePoints(10);
         position = curve[curve.size() / 2];
         curve.translate(-position);
-        objAsCurve->curve = curve;
+        objAsCurve->curve = initialCurve;
     } else if (objAsArea) {
         ShapeCurve initialCurve = AreaOptimizer::getAreaOptimizedShape(position, score, gradients, objAsArea->length * objAsArea->width);
         if (initialCurve.size() == 0) {
@@ -1023,29 +1025,9 @@ void EnvObjsInterface::displayProbas(std::string objectName)
 void EnvObjsInterface::displayMaterialDistrib(std::string materialName)
 {
     GridF distribution = EnvObject::materials[materialName].currentState;
-    if(materialName == "deadcoral") {
-        distribution.normalize();
-        std::cout<<"DEADCORAL MATERIAL CHECK"<<std::endl;
-        Plotter::get("Material")->addImage(distribution);
-        Plotter::get("Material")->exec();
-        std::cout<<"SAVING DISTRIBUTION IMAGE"<<std::endl;
-        distribution.toImageRGB("test_distribution.png");
-        std::cout<<"PROCESSING SKELETONIZATION"<<std::endl;
-        auto polylines = distribution.skeletonizeToBSplines();
-        std::cout<<"POLYLINES SIZE: "<<polylines.size()<<std::endl;
-        polylines[0].toString();
-        GridF polylinesImage(distribution.getDimensions());
-        polylinesImage.fillWithBSplines(polylines);
-        Plotter::get("Material")->addImage(polylinesImage);
-        Plotter::get("Material")->show();
-        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
-    }
-    else {
-        GridF distribution = EnvObject::materials[materialName].currentState;
-        Plotter::get("Material")->addImage(distribution);
-        Plotter::get("Material")->show();
-        dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
-    }
+    Plotter::get("Material")->addImage(distribution);
+    Plotter::get("Material")->show();
+    dynamic_cast<TerrainGenerationInterface*>(viewer->interfaces["terraingeneration"].get())->updateScalarFieldToDisplay(distribution);
     //Plotter::get()->exec();
     Q_EMIT updated();
 }
@@ -1834,6 +1816,7 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
     });
 
     auto obj = EnvObject::availableObjects[objectCombobox->getSelection().label];
+    std::cout<<"OBJECT NAME : "<<objectCombobox->getSelection().label<<std::endl;
     auto score = fittingScoreGrid;
 
     GridV3 result = GridV3(score.getDimensions(), Vector3(1, 1, 1)) * score;
@@ -1852,9 +1835,10 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
         isoline = ShapeCurve::circle(objAsPoint->radius, position, 20);
     } else if (auto objAsCurve = dynamic_cast<EnvCurve*>(obj)) {
         BSpline initialCurve;
-        if (objAsCurve->curveFollow == EnvCurve::SKELETON) {
-            float targetLength = objAsCurve->length;
-            initialCurve = CurveOptimizer::getSkeletonCurve(position, score, gradients, targetLength);
+        if (objAsCurve->curveFollow == EnvCurve::SNAKE) {
+            initialCurve = CurveOptimizer::getSkeletonCurveWithSnake(position, score, gradients, objAsCurve->length);
+        } else if (objAsCurve->curveFollow == EnvCurve::SKELETON) {
+            initialCurve = CurveOptimizer::getSkeletonCurve(position, score, objAsCurve->length);
         } else if (objAsCurve->curveFollow == EnvCurve::ISOVALUE) {
             initialCurve = CurveOptimizer::followIsolevel(position, score, gradients, objAsCurve->length);
         } else if (objAsCurve->curveFollow == EnvCurve::GRADIENTS) {
@@ -1899,13 +1883,14 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
         }
         isoline = initialCurve;
     }
+
     std::cout << isoline.toString() << std::endl;
 
-    if (isoline.closed) {
-        dataV3.iterateParallel([&](const Vector3& pos) {
-            result(pos) += Vector3(.5f, .5f, .5f) * (isoline.containsXY(pos, false) ? 1.f : 0.f);
-        });
-    }
+    // if (isoline.closed) {
+    //     dataV3.iterateParallel([&](const Vector3& pos) {
+    //         result(pos) += Vector3(.5f, .5f, .5f) * (isoline.containsXY(pos, false) ? 1.f : 0.f);
+    //     });
+    // }
     int nbSamples = 500;
     auto path = isoline.getPath(nbSamples); // .resamplePoints(nbSamples).points;
     for (size_t i = 0; i < path.size(); i++) {
@@ -1914,6 +1899,7 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
     for (size_t i = 0; i < isoline.size(); i++) {
         result(isoline[i]) = Vector3(1, 1, 1); //colorPalette(float(i) / float(path.size() - 1));
     }
+    //result = result.fillWithOneBSpline(isoline);
     Plotter::get("Object Preview")->addImage(result);
     Plotter::get("Object Preview")->show();
     Plotter::get("Object Preview")->addImage(dataV3);

@@ -29,8 +29,8 @@ class CurveOptimizer
 public:
     static BSpline getMinLengthCurveFollowingIsolevel(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, float minLength);
     static BSpline getExactLengthCurveFollowingGradients(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, float targetLength);
-    static BSpline getSkeletonCurve(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, float targetLength);
-
+    static BSpline getSkeletonCurveWithSnake(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, float targetLength);
+    static BSpline getSkeletonCurve(const Vector3& seedPosition, const GridF& score, float targetLength);
 //protected:
     static BSpline followIsolevel(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, float minLength);
     static BSpline followGradient(const Vector3& seedPosition, const GridF& score, const GridV3& gradients, int maxTries, bool goUp);

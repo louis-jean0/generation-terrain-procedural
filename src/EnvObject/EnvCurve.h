@@ -33,7 +33,7 @@ public:
 
     virtual nlohmann::json toJSON() const;
 
-    enum CURVE_FOLLOW { GRADIENTS, ISOVALUE, SKELETON };
+    enum CURVE_FOLLOW { GRADIENTS, ISOVALUE, SKELETON, SNAKE };
 
     CURVE_FOLLOW curveFollow = CURVE_FOLLOW::GRADIENTS;
 };

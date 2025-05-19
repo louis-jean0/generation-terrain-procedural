@@ -588,18 +588,29 @@ int main(int argc, char *argv[])
     //         }
     //     }
     // }
-    // PART WITH LOADED IMAGE
-    GridF testGrid = GridF::fromImageBW("test_deadcoral.png");
-    Plotter::get()->addImage(testGrid)->setNormalizedModeImage(true)->exec();
-    std::vector<BSpline> polylines = (testGrid).skeletonizeToBSplines();
-    for (auto& s: polylines) {
-        s = s.simplifyByRamerDouglasPeucker(2.f);
-    }
-    std::cout<<"NUMBER OF GENERATED POLYLINES : "<<polylines.size()<<std::endl;
-    auto testPolyline = testGrid.fillWithBSplines(polylines);
-    std::cout<<"SAVING TEST POLYLINES IMAGE"<<std::endl;
-    //testPolyline.toImageRGB("test_polylines.png");
-    Plotter::get()->addImage(testPolyline)->setNormalizedModeImage(true)->exec();
+
+    // /* Unit test skeletonizeToBSplines (with loaded image) */
+    // GridF testGrid = GridF::fromImageBW("test_deadcoral.png");
+    // Plotter::get()->addImage(testGrid)->setNormalizedModeImage(true)->exec();
+    // std::vector<BSpline> polylines = testGrid.skeletonizeToBSplines();
+    // for (auto& s: polylines) {
+    //     s = s.simplifyByRamerDouglasPeucker(2.f);
+    // }
+    // std::cout<<"NUMBER OF GENERATED POLYLINES : "<<polylines.size()<<std::endl;
+    // auto testPolyline = testGrid.fillWithBSplines(polylines);
+    // Plotter::get()->addImage(testPolyline)->setNormalizedModeImage(true)->exec();
+
+    // /* Unit test of getSkeletonCurve */
+    // BSpline testCurve = CurveOptimizer::getSkeletonCurve(Vector3(0.0f,0.0f,0.0f), testGrid, 1.0f);
+    // std::vector<BSpline> test = {testCurve};
+    // auto testSpline = testGrid.fillWithBSplines(test);
+    // Plotter::get()->addImage(testSpline)->setNormalizedModeImage(true)->exec();
+
+    // /* Unit test of splitAtSharpTurningPoints */
+    // std::vector<BSpline> allSplines = BSpline::splitMultipleSplinesAtSharpTurningPoints(polylines);
+    // std::cout<<"TOTAL NUMBER OF SPLINES :"<<allSplines.size()<<std::endl;
+    // auto testSharpTurningPointsSplines = testGrid.fillWithBSplines(allSplines);
+    // Plotter::get()->addImage(testSharpTurningPointsSplines)->setNormalizedModeImage(true)->exec();
 
     /* Unit test of binarization with Otsu threshold */
     // GridF testBinarize = GridF::fromImageBW("test_deadcoral.png");

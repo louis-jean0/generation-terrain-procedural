@@ -282,6 +282,7 @@ EnvObject *EnvObject::fromJSON(nlohmann::json content)
             if (content["follows"] == "isovalue") asCurve->curveFollow = EnvCurve::CURVE_FOLLOW::ISOVALUE;
             else if (content["follows"] == "gradients") asCurve->curveFollow = EnvCurve::CURVE_FOLLOW::GRADIENTS;
             else if (content["follows"] == "skeleton") asCurve->curveFollow = EnvCurve::CURVE_FOLLOW::SKELETON;
+            else if (content["follows"] == "snake") asCurve->curveFollow = EnvCurve::CURVE_FOLLOW::SNAKE;
             else std::cerr << "Value for 'follow' in object " << objName << " not recognized. Should be 'isovalue', 'gradients' or 'skeleton'. Got " << content["follows"] << std::endl;
         }
         obj = asCurve;

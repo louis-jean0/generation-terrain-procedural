@@ -109,6 +109,8 @@ public:
 
     std::pair<Vector3, Vector3> pointAndDerivative(float x, float alpha = 2.f) const;
     std::tuple<Vector3, Vector3, Vector3> pointAndDerivativeAndSecondDerivative(float x, float alpha = 2.f) const;
+    std::vector<BSpline> splitAtSharpTurningPoints();
+    static std::vector<BSpline> splitMultipleSplinesAtSharpTurningPoints(std::vector<BSpline>& splines);
 };
 
 

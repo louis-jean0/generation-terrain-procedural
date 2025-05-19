@@ -32,6 +32,7 @@ Matrix3<Vector3> Matrix3<Vector3>::curl(float radius) const {
     }*/
     return returningGrid;
 }
+
 template<>
 Matrix3<Vector3> Matrix3<Vector3>::rot() const {
     return this->curl();
@@ -90,9 +91,9 @@ Matrix3<int> Matrix3<int>::skeletonize() const
 template<>
 std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
 {
-    int otsuThreshold = this->computeOtsuThreshold();
-    std::cout<<"OTSU THRESHOLD COMPUTED : "<<otsuThreshold<<std::endl;
-    Matrix3<int> initial = ((Matrix3<float>)*this).binarize(otsuThreshold);
+    Matrix3<float> normalized = this->normalized();
+    int otsuThreshold = normalized.computeOtsuThreshold();
+    Matrix3<int> initial = normalized.binarize(otsuThreshold);
     skeleton_tracer_t* skel = new skeleton_tracer_t();
     skel->W = this->sizeX; // width of image
     skel->H = this->sizeY; // height of image
@@ -110,7 +111,6 @@ std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
 
     // run the algorithm
     skeleton_tracer_t::polyline_t* p = (skeleton_tracer_t::polyline_t*)skel->trace_skeleton(0, 0, skel->W, skel->H, 0);
-
 
     std::vector<BSpline> splines;
     skeleton_tracer_t::polyline_t* it = p; //iterator
@@ -182,6 +182,17 @@ std::vector<BSpline> Matrix3<float>::skeletonizeToBSplines() const
         splines = merged;
     }
     return splines;
+}
+
+template<>
+Matrix3<Vector3> Matrix3<Vector3>::fillWithOneBSpline(BSpline spline) const {
+    Matrix3<Vector3> newImage(this->getDimensions());
+    newImage.raiseErrorOnBadCoord = false;
+    for (auto& point : spline.resamplePoints(10000)) {
+        newImage.at(point) = HSVtoRGB(1.0f, 1.0f, 1.0f);
+    }
+    newImage.raiseErrorOnBadCoord = true;
+    return newImage;
 }
 
 template<>

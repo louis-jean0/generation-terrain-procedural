@@ -179,6 +179,7 @@ public:
 
     Matrix3<int> skeletonize() const;
     std::vector<BSpline> skeletonizeToBSplines() const;
+    Matrix3<Vector3> fillWithOneBSpline(BSpline spline) const;
     Matrix3<Vector3> fillWithBSplines(std::vector<BSpline> splines) const;
     Matrix3<T> dilate(bool use2D = false, float t = 1.f) const;
     Matrix3<T> erode(bool use2D = false, float t = 1.f) const;
@@ -1489,24 +1490,24 @@ int Matrix3<T>::computeOtsuThreshold() const {
     std::vector<int> histogram(256, 0);
     size_t N = this->size();
 
-    // Remplir l'histogramme
     for (size_t i = 0; i < N; ++i) {
         int val = static_cast<int>(this->data[i]);
-        val = std::clamp(val, 0, 255);  // sécuriser les bornes
+        val = std::clamp(val, 0, 255);
         histogram[val]++;
     }
 
-    // Calculs de base
     std::vector<float> prob(256);
-    for (int i = 0; i < 256; ++i)
+    for (int i = 0; i < 256; ++i) {
         prob[i] = static_cast<float>(histogram[i]) / N;
+    }
 
     float mu_T = 0.0f;
-    for (int i = 0; i < 256; ++i)
+    for (int i = 0; i < 256; ++i) {
         mu_T += i * prob[i];
+    }
 
-    float max_var = 0.0f;
-    int best_thresh = 0;
+    float maxVar = 0.0f;
+    int bestThresh = 0;
     float omega = 0.0f;
     float mu = 0.0f;
 
@@ -1519,13 +1520,12 @@ int Matrix3<T>::computeOtsuThreshold() const {
 
         float sigma_b_squared = std::pow(mu_T * omega - mu, 2) / (omega * (1.0f - omega));
 
-        if (sigma_b_squared > max_var) {
-            max_var = sigma_b_squared;
-            best_thresh = t;
+        if (sigma_b_squared > maxVar) {
+            maxVar = sigma_b_squared;
+            bestThresh = t;
         }
     }
-
-    return best_thresh;
+    return bestThresh;
 }
 
 template<class T>

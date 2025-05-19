@@ -1021,6 +1021,59 @@ std::tuple<Vector3, Vector3, Vector3> BSpline::pointAndDerivativeAndSecondDeriva
 
     return {C, Cp, Cpp};
 }
+
+std::vector<BSpline> BSpline::splitAtSharpTurningPoints() {
+    std::vector<BSpline> result;
+    if(closed) {
+        if(!points.empty()) {
+            result.push_back(*this);
+        }
+        return result;
+    }
+    BSpline sampledSpline = this->resamplePoints(10);
+    std::vector<Vector3> currentPoints;
+    currentPoints.push_back(sampledSpline[0]);
+    for(size_t i = 1; i < sampledSpline.numPoints() - 1; ++i) {
+        Vector3 v1 = (sampledSpline[i] - sampledSpline[i-1]).normalize();
+        Vector3 v2 = (sampledSpline[i+1] - sampledSpline[i]).normalize();
+        float dotv1v2 = v1.dot(v2);
+        bool sharpTurn = dotv1v2 > 0.0f;
+        if(sharpTurn) {
+            currentPoints.push_back(sampledSpline[i]);
+            if(currentPoints.size() >= 2) {
+                BSpline newSpline(currentPoints);
+                newSpline.closed = false;
+                result.push_back(newSpline);
+            }
+            currentPoints.clear();
+            currentPoints.push_back(sampledSpline[i]);
+        }
+        else {
+            currentPoints.push_back(sampledSpline[i]);
+        }
+    }
+    currentPoints.push_back(sampledSpline.points.back());
+    if(currentPoints.size() >= 2) {
+        BSpline newSpline(currentPoints);
+        newSpline.closed = false;
+        result.push_back(newSpline);
+    }
+    if(result.empty() && !points.empty()) {
+        result.push_back(*this);
+    }
+    return result;
+}
+
+std::vector<BSpline> BSpline::splitMultipleSplinesAtSharpTurningPoints(std::vector<BSpline>& splines) {
+    std::vector<BSpline> result;
+    for(auto& spline : splines) {
+        for(const auto& subspline : spline.splitAtSharpTurningPoints()) {
+            result.push_back(subspline);
+        }
+    }
+    return result;
+}
+
 const Vector3 &BSpline::operator[](size_t i) const
 {
     return this->points[(i + size()) % size()];

@@ -3823,7 +3823,13 @@ Matrix3.o: src/DataStructure/Matrix3.cpp src/DataStructure/Matrix3.h \
 		src/Utils/Collisions.h \
 		src/DataStructure/Triangle.h \
 		src/Utils/Utils.h \
-		src/Utils/Skeletonize.h
+		src/Utils/Skeletonize.h \
+		src/Graphics/Plotter.h \
+		src/Interface/CommonInterface.h \
+		src/Interface/InterfaceUtils.h \
+		src/Interface/RangeSlider.h \
+		src/Interface/FancySlider.h \
+		src/Interface/HierarchicalListWidget.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Matrix3.o src/DataStructure/Matrix3.cpp
 
 MemoryPool.o: src/DataStructure/MemoryPool.cpp src/DataStructure/MemoryPool.h

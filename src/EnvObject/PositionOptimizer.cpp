@@ -2,6 +2,7 @@
 
 #include "Graph/Pathfinding.h"
 #include "Utils/Delaunay.h"
+#include "Graphics/Plotter.h"
 
 Vector3 PositionOptimizer::getHighestPosition(const Vector3 &seedPosition, const GridF &score, const GridV3 &gradients)
 {
@@ -183,7 +184,7 @@ BSpline CurveOptimizer::getExactLengthCurveFollowingGradients(const Vector3 &see
     return curve.resamplePoints();*/
 }
 
-BSpline CurveOptimizer::getSkeletonCurve(const Vector3 &seedPosition, const GridF &score, const GridV3 &gradients, float targetLength)
+BSpline CurveOptimizer::getSkeletonCurveWithSnake(const Vector3 &seedPosition, const GridF &score, const GridV3 &gradients, float targetLength)
 {
     Vector3 pos = seedPosition;
 
@@ -214,6 +215,69 @@ BSpline CurveOptimizer::getSkeletonCurve(const Vector3 &seedPosition, const Grid
         initialCurve = BSpline();
     }
     return initialCurve;
+}
+
+// BSpline CurveOptimizer::getSkeletonCurve(const GridF &score) {
+//     auto splines = score.skeletonizeToBSplines();
+//     if(splines.empty()) {
+//         return BSpline();
+//     }
+//     // BSpline bestSpline = *std::max_element(splines.begin(), splines.end(), [](const BSpline& a, const BSpline& b) {
+//     //     return a.length() < b.length();
+//     // });
+//     // return bestSpline;
+//     BSpline bestSpline = splines[0];
+//     return bestSpline;
+// }
+
+BSpline CurveOptimizer::getSkeletonCurve(const Vector3 &seedPosition, const GridF &score, float minLength) {
+    
+    std::cout<<"Seed position : "<<seedPosition<<std::endl;
+    auto splines = score.skeletonizeToBSplines();
+    if (splines.empty()) {
+        std::cout<<"SPLINES IS EMPTY"<<std::endl;
+        return BSpline();
+    }
+    std::cout<<"Size of splines : "<<splines.size()<<std::endl;
+
+    BSpline bestSpline;
+    float minDistance = std::numeric_limits<float>::max();
+
+    for(auto& spline : splines) {
+        spline = spline.simplifyByRamerDouglasPeucker(2.0f);
+    }
+
+    std::vector<BSpline> subsplines = BSpline::splitMultipleSplinesAtSharpTurningPoints(splines);
+    std::cout<<"Size of subsplines : "<<subsplines.size()<<std::endl;
+    /* Debugging */
+    // GridF debugImage(score.getDimensions());
+    // Plotter::get()->addImage(debugImage.fillWithBSplines(subsplines))->exec();
+    for (const auto& spline : subsplines) {
+        // if (spline.length() < minLength) {
+        //     continue;
+        // }
+
+        float closestDistance = std::numeric_limits<float>::max();
+        for (const auto& point : spline.points) {
+            float distance = (point - seedPosition).norm();
+            if (distance < closestDistance) {
+                closestDistance = distance;
+            }
+        }
+
+        if (closestDistance < minDistance) {
+            minDistance = closestDistance;
+            bestSpline = spline;
+        }
+    }
+
+    if (bestSpline.empty()) {
+        std::cout<<"No BSpline found !!!"<<std::endl;
+        return BSpline();
+    }
+
+    return bestSpline;
+
 }
 
 BSpline CurveOptimizer::followIsolevel(const Vector3 &seedPosition, const GridF &score, const GridV3 &gradients, float minLength)

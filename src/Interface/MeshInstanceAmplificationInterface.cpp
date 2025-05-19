@@ -117,7 +117,6 @@ void MeshInstanceAmplificationInterface::reloadShaders()
         }
         */
 
-        /*
         meshesOptions.push_back(InstantiationMeshOption("boulder", {3.f, 8.f}, {.2f, 1.f, .5f, 1.f}));
 //        meshesOptions.push_back(InstantiationMeshOption("reef", "coral", {1.f, 5.f}, {1.f, .5f, .5f, 1.f}));
         meshesOptions.push_back(InstantiationMeshOption("coralpolyp", "corals", {5.f, 5.f}, {1.f, .5f, .5f, 1.f}, Vector3(), {5, 20}, 10.f));
@@ -154,13 +153,13 @@ void MeshInstanceAmplificationInterface::reloadShaders()
                 } else if (dir.endsWith("stl", Qt::CaseInsensitive)) {
                     meshType.possibleMeshes[i].fromStl(dir.toStdString()).scale(Vector3(1.f, 1.f, -1.f));
                 } else if (!dir.endsWith(".ignore")) {
-                    std::cerr << "Unable to open file " << dir.toStdString() << std::endl;
+                    std::cerr << "Unable to open file (ignoring)" << dir.toStdString() << std::endl;
                 }
 
                 meshType.possibleMeshes[i].normalize().translate(Vector3(0.f, 0.f, (meshType.name == "island" && false ? 0.f : -.5f)));
                 meshType.possibleMeshes[i].cullFace = false;
             }
-        }*/
+        }
     }, verbose);
 }
 
@@ -361,7 +360,7 @@ void MeshInstanceAmplificationInterface::readMeshInstanceFile(const std::string 
             } else if (dir.endsWith("stl", Qt::CaseInsensitive)) {
                 meshType.possibleMeshes[i].fromStl(dir.toStdString()).scale(Vector3(1.f, 1.f, -1.f));
             } else if (!dir.endsWith(".ignore")) {
-                std::cerr << "Unable to open file " << dir.toStdString() << std::endl;
+                std::cerr << "Unable to open file (ignoring) " << dir.toStdString() << std::endl;
             }
 
             meshType.possibleMeshes[i].normalize().translate(Vector3(0.f, 0.f, -.5f));
