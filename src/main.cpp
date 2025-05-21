@@ -621,27 +621,47 @@ int main(int argc, char *argv[])
     // std::cout<<"DISPLAYING BINARIZED IMAGE WITH OTSU THRESHOLD"<<std::endl;
     // Plotter::get()->addImage(testBinarize)->setNormalizedModeImage(true)->exec();
 
+    /* Unit test fillWithBSplines */
+    // BSpline spline1 = BSpline({
+    //     Vector3(0, 0, 0),
+    //     Vector3(20, 40, 0),
+    //     Vector3(40, 20, 0),
+    //     Vector3(60, 60, 0),
+    //     Vector3(80, 30, 0),
+    //     Vector3(100, 70, 0),
+    //     Vector3(120, 50, 0),
+    //     Vector3(140, 90, 0),
+    //     Vector3(160, 60, 0),
+    //     Vector3(180, 100, 0),
+    //     Vector3(200, 80, 0)
+    // });
+    // std::vector<BSpline> splines = {spline1};
+    // const int imgSize = 500;
+    // GridF img(Vector3{imgSize, imgSize, imgSize}, 0.f);
+    // img = img.fillWithBSplines(splines);
+    // Plotter::get()->addImage(img)->setNormalizedModeImage(true)->exec();
 
-    /* Unit test fillWithBSplines
-    BSpline spline1 = BSpline({
-        Vector3(0, 0, 0),
-        Vector3(20, 40, 0),
-        Vector3(40, 20, 0),
-        Vector3(60, 60, 0),
-        Vector3(80, 30, 0),
-        Vector3(100, 70, 0),
-        Vector3(120, 50, 0),
-        Vector3(140, 90, 0),
-        Vector3(160, 60, 0),
-        Vector3(180, 100, 0),
-        Vector3(200, 80, 0)
-    });
-    std::vector<BSpline> splines = {spline1};
-    const int imgSize = 500;
-    GridF img(Vector3{imgSize, imgSize, imgSize}, 0.f);
-    img = img.fillWithBSplines(splines);
-    Plotter::get()->addImage(img)->setNormalizedModeImage(true)->exec();
-    */
+    /* Unit test vector field plot */
+    GridV3 testVectorField(100,100,1,Vector3(0.0f,1.0f,0.0f));
+
+       TwistKelvinlet* t0 = new TwistKelvinlet();
+       TranslateKelvinlet* t1 = new TranslateKelvinlet();
+       ScaleKelvinlet* t2 = new ScaleKelvinlet();
+        PinchKelvinlet* t3 = new PinchKelvinlet();
+        Vector3 offset(1,1,1);
+        t0->pos = Vector3(50,50,1);
+//        center = mousePos;
+//        t->force = Vector3(0, 0, -offset.getSignedAngleWith(Vector3(1, 0, 0)));
+        t0->force = offset * 10.f; //Vector3(0, s, 0);
+        // t->force = Vector3(20, 0, 0);
+//        t->scale = offset.norm();
+        t0->radialScale = 5.0f;
+        testVectorField.iterateParallel([&](Vector3 p) {
+            testVectorField[p] = t0->evaluate(p);
+        });
+        Plotter::get()->addVectorField(testVectorField)->exec();
+    
+
     //OpenFoamParser::createSimulationFile("OpenFOAM/simple", GridF());
     //return 0;
 

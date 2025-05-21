@@ -38,7 +38,11 @@ void MeshInstanceAmplificationInterface::display(const Vector3& camPos)
 
         for (auto& meshType : meshesOptions) {
             if (!meshType.displayed) continue;
+            std::cout<<"AFTER CONTINUE"<<std::endl;
+            std::cout<<"meshType.name : "<<meshType.name<<std::endl;
+            std::cout<<"meshType.indices.size : "<<meshType.indices.size()<<std::endl;
             for (size_t i = 0; i < meshType.indices.size(); i++) {
+                std::cout<<"CORALPOLYP HAS BEEN HERE 1"<<std::endl;
                 int iMesh = meshType.indices[i];
                 Vector3& pos = meshType.positions[i];
                 float size = meshType.sizes[i];
@@ -53,6 +57,17 @@ void MeshInstanceAmplificationInterface::display(const Vector3& camPos)
 //                meshType.possibleMeshes[iMesh].displayWithOutlines(meshType.color);
                 meshType.possibleMeshes[iMesh].shader->setVector("color", meshType.color);
                 meshType.possibleMeshes[iMesh].display();
+                std::cout<<"OFFSET : "<<(pos + Vector3(0, 0, 2.f)) * Vector3(1, 1, terrainHeightFactor) - meshType.requiredTranslation * size<<std::endl;
+                std::cout<<"SIZE FACTOR : "<<size<<std::endl;
+                for(const auto& v : values) {
+                    std::cout<<"INSTANCE ROTATION : "<<v<<std::endl;
+                }
+                std::cout<<"---------------------"<<std::endl;
+                for(const auto& c : meshType.color) {
+                    std::cout<<"COLOR : "<<c<<std::endl;
+                }
+                std::cout<<"---------------------"<<std::endl;
+                std::cout<<"CORALPOLYP HAS BEEN HERE 2"<<std::endl;
             }
         }
     }
@@ -117,15 +132,15 @@ void MeshInstanceAmplificationInterface::reloadShaders()
         }
         */
 
-        meshesOptions.push_back(InstantiationMeshOption("boulder", {3.f, 8.f}, {.2f, 1.f, .5f, 1.f}));
-//        meshesOptions.push_back(InstantiationMeshOption("reef", "coral", {1.f, 5.f}, {1.f, .5f, .5f, 1.f}));
-        meshesOptions.push_back(InstantiationMeshOption("coralpolyp", "corals", {5.f, 5.f}, {1.f, .5f, .5f, 1.f}, Vector3(), {5, 20}, 10.f));
-        meshesOptions.push_back(InstantiationMeshOption("coralpolypflat", "corals", {5.f, 5.f}, {1.f, .5f, .5f, 1.f}, Vector3(0, 0, .25f), {5, 20}, 10.f));
-        meshesOptions.push_back(InstantiationMeshOption("algae", {10.f, 15.f}, {.1f, .5f, .1f, 1.f}));
-        meshesOptions.push_back(InstantiationMeshOption("tree", {20.f, 40.f}, {.1f, 1.f, .1f, 1.f}));
-        meshesOptions.push_back(InstantiationMeshOption("arch", "arche", {20.f, 40.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .25f)));
-        meshesOptions.push_back(InstantiationMeshOption("bigRock", "rocks", {20.f, 40.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .5f)));
-        meshesOptions.push_back(InstantiationMeshOption("smallRock", "rocks", {3.f, 5.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .25f), {10, 30}, 5.f));
+//         meshesOptions.push_back(InstantiationMeshOption("boulder", {3.f, 8.f}, {.2f, 1.f, .5f, 1.f}));
+// //        meshesOptions.push_back(InstantiationMeshOption("reef", "coral", {1.f, 5.f}, {1.f, .5f, .5f, 1.f}));
+//         meshesOptions.push_back(InstantiationMeshOption("coralpolyp", "corals", {5.f, 5.f}, {1.f, .5f, .5f, 1.f}, Vector3(), {5, 20}, 10.f));
+//         meshesOptions.push_back(InstantiationMeshOption("coralpolypflat", "corals", {5.f, 5.f}, {1.f, .5f, .5f, 1.f}, Vector3(0, 0, .25f), {5, 20}, 10.f));
+//         meshesOptions.push_back(InstantiationMeshOption("algae", {10.f, 15.f}, {.1f, .5f, .1f, 1.f}));
+//         meshesOptions.push_back(InstantiationMeshOption("tree", {20.f, 40.f}, {.1f, 1.f, .1f, 1.f}));
+//         meshesOptions.push_back(InstantiationMeshOption("arch", "arche", {20.f, 40.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .25f)));
+//         meshesOptions.push_back(InstantiationMeshOption("bigRock", "rocks", {20.f, 40.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .5f)));
+//         meshesOptions.push_back(InstantiationMeshOption("smallRock", "rocks", {3.f, 5.f}, {.8f, .8f, .6f, 1.f}, Vector3(0, 0, .25f), {10, 30}, 5.f));
 //        meshesOptions.push_back(InstantiationMeshOption("island", {20.f, 40.f}, {.5f, .1f, .5f, 1.f}));
 
         for (auto& meshType : meshesOptions) {
@@ -279,7 +294,9 @@ std::vector<std::tuple<Vector3, float, int> > MeshInstanceAmplificationInterface
     for (auto& obj : EnvObject::instantiatedObjects) {
         if (toUpper(obj->name) != toUpper(type)) continue;
         float growthFactor = obj->computeGrowingState();
+        std::cout<<"growthFactor : "<<growthFactor<<std::endl;
         if (auto asPoint = dynamic_cast<EnvPoint*>(obj)) {
+            std::cout<<"Position of point : "<<Vector3(asPoint->position.x, asPoint->position.y, heightmap->getHeight(asPoint->position))<<std::endl;
             positionsAndGrowthFactor.push_back({Vector3(asPoint->position.x, asPoint->position.y, heightmap->getHeight(asPoint->position)), growthFactor, asPoint->ID});
         } else if (auto asCurve = dynamic_cast<EnvCurve*>(obj)) {
             auto path = asCurve->curve.getPath(60);
@@ -304,6 +321,7 @@ std::vector<std::tuple<Vector3, float, int> > MeshInstanceAmplificationInterface
             }
         }
     }
+    std::cout<<"positionsAndGrowthFactor.size : "<<positionsAndGrowthFactor.size()<<std::endl;
     return positionsAndGrowthFactor;
 }
 
@@ -342,6 +360,7 @@ void MeshInstanceAmplificationInterface::readMeshInstanceFile(const std::string 
         std::vector<QString> paths;
         while (it.hasNext()) {
             QString dir = it.next();
+            std::cout<<"DIRECTORY : "<<dir.toStdString()<<std::endl;
             if (endsWith(dir.toStdString(), ".ignore") || !(endsWith(dir.toStdString(), "stl") || endsWith(dir.toStdString(), "fbx"))) continue;
             paths.push_back(dir);
         }
@@ -423,6 +442,8 @@ void MeshInstanceAmplificationInterface::regenerateRocksPositions()
 void MeshInstanceAmplificationInterface::regenerateAllTypePositions()
 {
     for (auto& meshType : meshesOptions) {
+        std::cout<<"--- meshType.name : "<<meshType.name<<std::endl;
+        std::cout<<"--- meshType.possibleMeshes.size : "<<meshType.possibleMeshes.size()<<std::endl;
         auto availablePositions = (meshType.possibleMeshes.size() > 0 ? this->getPositionsFor(meshType.name) : std::vector<std::tuple<Vector3, float, int>>());
 //        std::shuffle(availablePositions.begin(), availablePositions.end(), random_gen::random_generator);
 

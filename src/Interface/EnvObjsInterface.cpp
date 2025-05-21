@@ -576,8 +576,10 @@ EnvObject* EnvObjsInterface::instantiateObjectAtBestPosition(std::string objectN
         BSpline curve = initialCurve;
         curve.resamplePoints(10);
         position = curve[curve.size() / 2];
-        curve.translate(-position);
+        //curve.translate(-position);
         objAsCurve->curve = initialCurve;
+        // Only for skeleton ?
+        newObject->translate(-position.xy());
     } else if (objAsArea) {
         ShapeCurve initialCurve = AreaOptimizer::getAreaOptimizedShape(position, score, gradients, objAsArea->length * objAsArea->width);
         if (initialCurve.size() == 0) {
@@ -592,6 +594,7 @@ EnvObject* EnvObjsInterface::instantiateObjectAtBestPosition(std::string objectN
         objAsArea->curve = curve.resamplePoints(10);
     }
 
+    // Check if this is needed (commented out to properly instantiate skeleton based objects)
     newObject->translate(position.xy());
     // newObject->recomputeEvaluationPoints();
     newObject->evaluationPositions = {initialPosition};
@@ -1886,11 +1889,11 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
 
     std::cout << isoline.toString() << std::endl;
 
-    // if (isoline.closed) {
-    //     dataV3.iterateParallel([&](const Vector3& pos) {
-    //         result(pos) += Vector3(.5f, .5f, .5f) * (isoline.containsXY(pos, false) ? 1.f : 0.f);
-    //     });
-    // }
+    if (isoline.closed) {
+        dataV3.iterateParallel([&](const Vector3& pos) {
+            result(pos) += Vector3(.5f, .5f, .5f) * (isoline.containsXY(pos, false) ? 1.f : 0.f);
+        });
+    }
     int nbSamples = 500;
     auto path = isoline.getPath(nbSamples); // .resamplePoints(nbSamples).points;
     for (size_t i = 0; i < path.size(); i++) {
@@ -1899,7 +1902,6 @@ void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)
     for (size_t i = 0; i < isoline.size(); i++) {
         result(isoline[i]) = Vector3(1, 1, 1); //colorPalette(float(i) / float(path.size() - 1));
     }
-    //result = result.fillWithOneBSpline(isoline);
     Plotter::get("Object Preview")->addImage(result);
     Plotter::get("Object Preview")->show();
     Plotter::get("Object Preview")->addImage(dataV3);
@@ -2005,7 +2007,9 @@ void EnvObjsInterface::addObjectsHeightmaps()
                     grid[i] = (std::abs(grid[i]) < 1e-4 ? -10000.f : grid[i]);
                 });
                 // std::cout << "Max height for " << obj->name << ": " << grid.max() << " while height = " << obj->height << "(grow = " <<  obj->computeGrowingState2() << ")" << std::endl;
-                waterConstraintedHeights = waterConstraintedHeights.max((grid - (obj->height)) - (obj->name == "lagoon" || obj->name == "smalllagoon" ? 3.f : 1.f), Vector3()); // Not sure why I need to multiply by 2.0, but otherwise, maxHeight is heigher than obj->height...
+                // Dirty, remove when you understand why lagoon get over the water...
+                // Should be just grid - obj->height
+                waterConstraintedHeights = waterConstraintedHeights.max((grid - (obj->height)) - (obj->name == "lagoon" || obj->name == "smalllagoon" ? 3.f : 1.f), Vector3());
             }
         }
     }

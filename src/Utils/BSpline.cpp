@@ -1037,7 +1037,7 @@ std::vector<BSpline> BSpline::splitAtSharpTurningPoints() {
         Vector3 v1 = (sampledSpline[i] - sampledSpline[i-1]).normalize();
         Vector3 v2 = (sampledSpline[i+1] - sampledSpline[i]).normalize();
         float dotv1v2 = v1.dot(v2);
-        bool sharpTurn = dotv1v2 > 0.0f;
+        bool sharpTurn = dotv1v2 < 0.0f;
         if(sharpTurn) {
             currentPoints.push_back(sampledSpline[i]);
             if(currentPoints.size() >= 2) {

@@ -217,19 +217,6 @@ BSpline CurveOptimizer::getSkeletonCurveWithSnake(const Vector3 &seedPosition, c
     return initialCurve;
 }
 
-// BSpline CurveOptimizer::getSkeletonCurve(const GridF &score) {
-//     auto splines = score.skeletonizeToBSplines();
-//     if(splines.empty()) {
-//         return BSpline();
-//     }
-//     // BSpline bestSpline = *std::max_element(splines.begin(), splines.end(), [](const BSpline& a, const BSpline& b) {
-//     //     return a.length() < b.length();
-//     // });
-//     // return bestSpline;
-//     BSpline bestSpline = splines[0];
-//     return bestSpline;
-// }
-
 BSpline CurveOptimizer::getSkeletonCurve(const Vector3 &seedPosition, const GridF &score, float minLength) {
     
     std::cout<<"Seed position : "<<seedPosition<<std::endl;
@@ -252,6 +239,7 @@ BSpline CurveOptimizer::getSkeletonCurve(const Vector3 &seedPosition, const Grid
     /* Debugging */
     // GridF debugImage(score.getDimensions());
     // Plotter::get()->addImage(debugImage.fillWithBSplines(subsplines))->exec();
+    std::cout<<"Obj as curve length : "<<minLength<<std::endl;
     for (const auto& spline : subsplines) {
         // if (spline.length() < minLength) {
         //     continue;
@@ -360,10 +348,8 @@ BSpline CurveOptimizer::followGradient(const Vector3 &seedPosition, const GridF 
 
     for (int i = 0; i < maxTries; i++) {
         track.points.push_back(pos);
-
         auto newPos = PositionOptimizer::followGradient(pos, gradients, 1, goUp);
         if ((newPos - pos).norm2() < 1e-5) break;
-
         pos = newPos;
     }
     track.points.push_back(pos);

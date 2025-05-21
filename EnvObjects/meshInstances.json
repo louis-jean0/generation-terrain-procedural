@@ -14,7 +14,7 @@
 	},
 	{
 		"name": "coralpolyp",
-		"foldername": "coral",
+		"foldername": "corals",
 		"colors": [
 			{"r": 1.0, "g": 0.5, "b": 0.5, "a": 1.0}
 		],
