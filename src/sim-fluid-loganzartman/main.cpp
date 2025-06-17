@@ -166,7 +166,7 @@ int main() {
     glfwGetWindowSize(window, &window_w, &window_h);
     game.resize(window_w, window_h);
 
-    // main loop
+    // Main loop
     while (!glfwWindowShouldClose(window)) {
         game.update();
         glfwSwapBuffers(window);

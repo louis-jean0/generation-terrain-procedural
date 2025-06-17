@@ -8,6 +8,22 @@
 
 #include "Interface/TerrainGenerationInterface.h"
 
+// MeshInstanceAmplificationInterface::MeshInstanceAmplificationInterface(QWidget* parent)
+//     : ActionInterface("meshinstance", "Mesh Instance Amplification", "view", "Amplify the terrain with meshes", "amplification_instances.png", parent)
+// {
+//     meshInstancesFile.path = "EnvObjects/meshInstances.json";
+//     meshInstancesFile.onChange([&](std::string content) {
+//         this->readMeshInstanceFile(content);
+//     });
+
+//     QTimer* hotreloadTimer = new QTimer(this);
+//     hotreloadTimer->setInterval(500);
+//     QObject::connect(hotreloadTimer, &QTimer::timeout, this, [&]() {
+//         meshInstancesFile.check();
+//     });
+//     hotreloadTimer->start();
+// }
+
 MeshInstanceAmplificationInterface::MeshInstanceAmplificationInterface(QWidget* parent)
     : ActionInterface("meshinstance", "Mesh Instance Amplification", "view", "Amplify the terrain with meshes", "amplification_instances.png", parent)
 {
@@ -16,16 +32,28 @@ MeshInstanceAmplificationInterface::MeshInstanceAmplificationInterface(QWidget* 
         this->readMeshInstanceFile(content);
     });
 
-    QTimer* hotreloadTimer = new QTimer(this);
-    hotreloadTimer->setInterval(500);
-    QObject::connect(hotreloadTimer, &QTimer::timeout, this, [&]() {
-        meshInstancesFile.check();
+    meshInstancesFile.check();
+
+    QTimer::singleShot(1000, this, [this]() {
+        QTimer* hotreloadTimer = new QTimer(this);
+        hotreloadTimer->setInterval(500);
+        QObject::connect(hotreloadTimer, &QTimer::timeout, this, [&]() {
+            meshInstancesFile.check();
+        });
+        hotreloadTimer->start();
     });
-    hotreloadTimer->start();
 }
 
 void MeshInstanceAmplificationInterface::display(const Vector3& camPos)
 {
+
+    if(!meshesReady || !displayEnvObjects) {
+        std::cout<<"MeshInstanceAmplificationInterface::display : meshes not ready or displayEnvObjects is false"<<std::endl;
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(meshesMutex);
+
     if (displayEnvObjects) {
 
         if (autoUpdateEnvObjLocations) {
@@ -38,11 +66,11 @@ void MeshInstanceAmplificationInterface::display(const Vector3& camPos)
 
         for (auto& meshType : meshesOptions) {
             if (!meshType.displayed) continue;
-            std::cout<<"AFTER CONTINUE"<<std::endl;
-            std::cout<<"meshType.name : "<<meshType.name<<std::endl;
-            std::cout<<"meshType.indices.size : "<<meshType.indices.size()<<std::endl;
+            // std::cout<<"AFTER CONTINUE"<<std::endl;
+            // std::cout<<"meshType.name : "<<meshType.name<<std::endl;
+            // std::cout<<"meshType.indices.size : "<<meshType.indices.size()<<std::endl;
             for (size_t i = 0; i < meshType.indices.size(); i++) {
-                std::cout<<"CORALPOLYP HAS BEEN HERE 1"<<std::endl;
+                //std::cout<<"CORALPOLYP HAS BEEN HERE 1"<<std::endl;
                 int iMesh = meshType.indices[i];
                 Vector3& pos = meshType.positions[i];
                 float size = meshType.sizes[i];
@@ -57,17 +85,17 @@ void MeshInstanceAmplificationInterface::display(const Vector3& camPos)
 //                meshType.possibleMeshes[iMesh].displayWithOutlines(meshType.color);
                 meshType.possibleMeshes[iMesh].shader->setVector("color", meshType.color);
                 meshType.possibleMeshes[iMesh].display();
-                std::cout<<"OFFSET : "<<(pos + Vector3(0, 0, 2.f)) * Vector3(1, 1, terrainHeightFactor) - meshType.requiredTranslation * size<<std::endl;
-                std::cout<<"SIZE FACTOR : "<<size<<std::endl;
-                for(const auto& v : values) {
-                    std::cout<<"INSTANCE ROTATION : "<<v<<std::endl;
-                }
-                std::cout<<"---------------------"<<std::endl;
-                for(const auto& c : meshType.color) {
-                    std::cout<<"COLOR : "<<c<<std::endl;
-                }
-                std::cout<<"---------------------"<<std::endl;
-                std::cout<<"CORALPOLYP HAS BEEN HERE 2"<<std::endl;
+                // std::cout<<"OFFSET : "<<(pos + Vector3(0, 0, 2.f)) * Vector3(1, 1, terrainHeightFactor) - meshType.requiredTranslation * size<<std::endl;
+                // std::cout<<"SIZE FACTOR : "<<size<<std::endl;
+                // for(const auto& v : values) {
+                //     std::cout<<"INSTANCE ROTATION : "<<v<<std::endl;
+                // }
+                // std::cout<<"---------------------"<<std::endl;
+                // for(const auto& c : meshType.color) {
+                //     std::cout<<"COLOR : "<<c<<std::endl;
+                // }
+                // std::cout<<"---------------------"<<std::endl;
+                // std::cout<<"CORALPOLYP HAS BEEN HERE 2"<<std::endl;
             }
         }
     }
@@ -321,12 +349,15 @@ std::vector<std::tuple<Vector3, float, int> > MeshInstanceAmplificationInterface
             }
         }
     }
-    std::cout<<"positionsAndGrowthFactor.size : "<<positionsAndGrowthFactor.size()<<std::endl;
+    //std::cout<<"positionsAndGrowthFactor.size : "<<positionsAndGrowthFactor.size()<<std::endl;
     return positionsAndGrowthFactor;
 }
 
 void MeshInstanceAmplificationInterface::readMeshInstanceFile(const std::string &fileContent)
 {
+    std::lock_guard<std::mutex> lock(meshesMutex);
+    meshesReady = false;
+
     std::string pathToShaders = "src/Shaders/";
     std::string vTreeShader = pathToShaders + "meshInstancesShader.vert";
     std::string fTreeShader = pathToShaders + "meshInstancesShader.frag";
@@ -360,7 +391,7 @@ void MeshInstanceAmplificationInterface::readMeshInstanceFile(const std::string 
         std::vector<QString> paths;
         while (it.hasNext()) {
             QString dir = it.next();
-            std::cout<<"DIRECTORY : "<<dir.toStdString()<<std::endl;
+            //std::cout<<"DIRECTORY : "<<dir.toStdString()<<std::endl;
             if (endsWith(dir.toStdString(), ".ignore") || !(endsWith(dir.toStdString(), "stl") || endsWith(dir.toStdString(), "fbx"))) continue;
             paths.push_back(dir);
         }
@@ -388,6 +419,7 @@ void MeshInstanceAmplificationInterface::readMeshInstanceFile(const std::string 
 
         meshesOptions.push_back(meshType);
     }
+    meshesReady = true;
 }
 
 void MeshInstanceAmplificationInterface::setCoralsDisplayed(bool display)
@@ -441,9 +473,12 @@ void MeshInstanceAmplificationInterface::regenerateRocksPositions()
 
 void MeshInstanceAmplificationInterface::regenerateAllTypePositions()
 {
+    // if(meshesOptions.empty()) return;
+    // assert(!meshesOptions.empty());
     for (auto& meshType : meshesOptions) {
-        std::cout<<"--- meshType.name : "<<meshType.name<<std::endl;
-        std::cout<<"--- meshType.possibleMeshes.size : "<<meshType.possibleMeshes.size()<<std::endl;
+        // std::cout<<"--- meshType.name : "<<meshType.name<<std::endl;
+        // std::cout<<"--- meshType.possibleMeshes.size : "<<meshType.possibleMeshes.size()<<std::endl;
+        std::cout<<"-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"<<std::endl;
         auto availablePositions = (meshType.possibleMeshes.size() > 0 ? this->getPositionsFor(meshType.name) : std::vector<std::tuple<Vector3, float, int>>());
 //        std::shuffle(availablePositions.begin(), availablePositions.end(), random_gen::random_generator);
 

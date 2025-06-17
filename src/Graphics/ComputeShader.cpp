@@ -12,7 +12,6 @@ ComputeShader::ComputeShader(std::string shaderPath)
 
 }
 
-
 void ComputeShader::compileShadersFromSource()
 {
 #if useModernOpenGL || !useModernOpenGL

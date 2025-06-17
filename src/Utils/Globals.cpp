@@ -82,6 +82,7 @@ GLuint GlobalsGL::newBufferId()
 {
     return GlobalsGL::currentBufferId += 1; // Gives space for vertex, texture and normals
 }
+
 bool GlobalsGL::checkOpenGLError()
 {
     bool error = false;
@@ -138,20 +139,69 @@ bool GlobalsGL::printProgramErrors(int program)
 #endif
     return false;
 }
-/*
-void GLAPIENTRY GlobalsGL::MessageCallback( GLenum source, GLenum type,
-                                            GLuint id, GLenum severity,
-                                            GLsizei length, const GLchar* message,
-                                            const void* userParam )
-{
-    UNUSED(source);
-    UNUSED(type);
-    UNUSED(length);
-    UNUSED(userParam);
-    return;
-    if (id == 131154) return; // Ignore "Pixel-path performance warning: Pixel transfer is synchronized with 3D rendering." due to screenshots
-    if (severity == GL_DEBUG_SEVERITY_HIGH || severity == GL_DEBUG_SEVERITY_MEDIUM || severity == GL_DEBUG_SEVERITY_LOW) {
-        std::string s_severity = (severity == GL_DEBUG_SEVERITY_HIGH ? "High" : severity == GL_DEBUG_SEVERITY_MEDIUM ? "Medium" : "Low");
-        std::cout << "Error " << id << " [severity=" << s_severity << "]: " << message << std::endl;
+
+namespace {
+    const std::unordered_map<GLenum, const char*> sourceMap = {
+        {GL_DEBUG_SOURCE_API, "API"},
+        {GL_DEBUG_SOURCE_WINDOW_SYSTEM, "Window System"},
+        {GL_DEBUG_SOURCE_SHADER_COMPILER, "Shader Compiler"},
+        {GL_DEBUG_SOURCE_THIRD_PARTY, "Third Party"},
+        {GL_DEBUG_SOURCE_APPLICATION, "Application"},
+        {GL_DEBUG_SOURCE_OTHER, "Other"}
+    };
+
+    const std::unordered_map<GLenum, const char*> typeMap = {
+        {GL_DEBUG_TYPE_ERROR, "Error"},
+        {GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, "Deprecated"},
+        {GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR, "Undefined Behavior"},
+        {GL_DEBUG_TYPE_PORTABILITY, "Portability"},
+        {GL_DEBUG_TYPE_PERFORMANCE, "Performance"},
+        {GL_DEBUG_TYPE_MARKER, "Marker"},
+        {GL_DEBUG_TYPE_PUSH_GROUP, "Push Group"},
+        {GL_DEBUG_TYPE_POP_GROUP, "Pop Group"},
+        {GL_DEBUG_TYPE_OTHER, "Other"}
+    };
+
+    const std::unordered_map<GLenum, const char*> severityMap = {
+        {GL_DEBUG_SEVERITY_HIGH, "High"},
+        {GL_DEBUG_SEVERITY_MEDIUM, "Medium"},
+        {GL_DEBUG_SEVERITY_LOW, "Low"},
+        {GL_DEBUG_SEVERITY_NOTIFICATION, "Notification"}
+    };
+}
+
+void GLAPIENTRY GlobalsGL::MessageCallback(GLenum source, GLenum type, [[maybe_unused]] GLuint id,
+                                        GLenum severity, [[maybe_unused]] GLsizei length,
+                                        const GLchar* message, [[maybe_unused]] const void* userParam) {
+    
+    // Skip notifications
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        return;
     }
-}*/
+
+    std::cerr << "GL DEBUG CALLBACK:\n"
+              << "Source: " << (sourceMap.count(source) ? sourceMap.at(source) : "Unknown") << "\n"
+              << "Type: " << (typeMap.count(type) ? typeMap.at(type) : "Unknown")
+              << " (0x" << std::hex << type << std::dec << ")\n"
+              << "Severity: " << (severityMap.count(severity) ? severityMap.at(severity) : "Unknown")
+              << " (0x" << std::hex << severity << std::dec << ")\n"
+              << "Message: " << message << std::endl
+              << "=================================" << std::endl;
+}
+
+// void GLAPIENTRY GlobalsGL::MessageCallback( GLenum source, GLenum type,
+//                                             GLuint id, GLenum severity,
+//                                             GLsizei length, const GLchar* message,
+//                                             const void* userParam )
+// {
+//     UNUSED(source);
+//     UNUSED(type);
+//     UNUSED(length);
+//     UNUSED(userParam);
+//     return;
+//     if (id == 131154) return; // Ignore "Pixel-path performance warning: Pixel transfer is synchronized with 3D rendering." due to screenshots
+//     if (severity == GL_DEBUG_SEVERITY_HIGH || severity == GL_DEBUG_SEVERITY_MEDIUM || severity == GL_DEBUG_SEVERITY_LOW) {
+//         std::string s_severity = (severity == GL_DEBUG_SEVERITY_HIGH ? "High" : severity == GL_DEBUG_SEVERITY_MEDIUM ? "Medium" : "Low");
+//         std::cout << "Error " << id << " [severity=" << s_severity << "]: " << message << std::endl;
+//     }
+// }

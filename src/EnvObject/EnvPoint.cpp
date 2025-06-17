@@ -96,14 +96,31 @@ std::pair<GridV3, GridF> EnvPoint::computeFlowModification()
         ScaleKelvinlet k;
         k.pos = this->position;
         k.radialScale = this->radius * .2f;
-        k.scale = 10.f * /*growingState * */this->flowEffect.x;
+        // std::cout<<"FLOWEFFECT.X : "<<this->flowEffect.x<<std::endl;
+        k.scale = 10.0f * this->flowEffect.x; // /*growingState * */this->flowEffect.x; // C'était 10.0f * this->flowEffect.x avant
         k.mu = .9f;
         k.v = 0.f;
+
+        PinchKelvinlet pk;
+        pk.pos = this->position + Vector3(1.0f,0.0f,0.0f) * this->radius * 0.01f; //this->position + EnvObject::getMeanFlowfieldDirection() * this->radius * 0.1f;
+        pk.force = this->flowEffect; //Vector3(1.0f, 1.0f, 0.0f);
+        pk.radialScale = this->radius * 0.001f;
+        pk.mu = 0.9f;
+        pk.v = 0.0f;
+
+        TwistKelvinlet tk;
+        tk.pos = this->position + Vector3(1.0f,0.0f,0.0f) * this->radius * 0.01f; // this->position + EnvObject::getMeanFlowfieldDirection() * this->radius * 0.1f;
+        tk.force = 0.1f * this->flowEffect; //Vector3(1.0f, 1.0f, 0.0f);
+        tk.radialScale = this->radius * 0.01f;
+        tk.mu = 0.9f;
+        tk.v = 0.0f;
 
         // GridV3 flow = EnvObject::flowfield;
         GridV3 flow(EnvObject::flowfield.getDimensions());
         flow.iterateParallel([&](const Vector3& p) {
             Vector3 displacement = k.evaluate(p);
+            displacement += pk.evaluate(p);
+            //displacement += tk.evaluate(p);
             flow(p) += displacement;
         });
         _cachedFlowModif = flow;

@@ -177,6 +177,9 @@ public:
     Vector3 gradient(const Vector3& position) const;
     Vector3 gradient(float posX, float posY, float posZ = 0) const;
 
+    void drawLine(const Vector3& from, const Vector3& to, const Vector3& color);
+    Vector3 getMeanFieldDirection() const;
+    Vector3 getMeanFieldDirectionWeighted() const;
     Matrix3<int> skeletonize() const;
     std::vector<BSpline> skeletonizeToBSplines() const;
     Matrix3<Vector3> fillWithOneBSpline(BSpline spline) const;

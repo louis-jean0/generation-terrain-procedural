@@ -117,6 +117,7 @@ public:
 
     static GridV3 flowfield;
     static GridV3 initialFlowfield;
+    static Vector3 getMeanFlowfieldDirection();
     static GridV3 terrainNormals;
 
     static std::map<std::string, EnvMaterial> materials;

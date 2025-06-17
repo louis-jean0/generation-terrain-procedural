@@ -101,8 +101,20 @@ void Viewer::init() {
 //                                 Vector3(-1.0f,  1.0f)}, raymarchingShader);
 
     glEnable              ( GL_DEBUG_OUTPUT );
-//    GlobalsGL::f()->glDebugMessageCallback( GlobalsGL::MessageCallback, 0 ); // TODO : Add back
-
+    //GlobalsGL::f()->glDebugMessageCallback( GlobalsGL::MessageCallback, nullptr);
+    debugLogger = new QOpenGLDebugLogger(this);
+    if(debugLogger->initialize()) {
+        connect(debugLogger, &QOpenGLDebugLogger::messageLogged,
+                this, [](const QOpenGLDebugMessage &message) {
+                    qDebug() << "OpenGL Debug : " << message;
+                });
+        debugLogger->startLogging(QOpenGLDebugLogger::SynchronousLogging);
+        debugLogger->enableMessages();
+    } else {
+        qWarning() << "QOpenGLDebugLogger not available";
+    }
+    std::cout<<"---------------------------------------- OPENGL DEBUGGING ENABLED ----------------------------------------"<<std::endl;
+    
     Shader::default_shader = std::make_shared<Shader>(vNoShader, fNoShader);
     this->mainGrabber = std::make_unique<ControlPoint>(Vector3(), 1.f, ACTIVE, false);
 

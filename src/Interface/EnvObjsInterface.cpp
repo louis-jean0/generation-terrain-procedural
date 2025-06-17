@@ -1801,10 +1801,10 @@ GridV3 EnvObjsInterface::renderFocusArea() const
 
 GridV3 EnvObjsInterface::renderFlowfield() const
 {
-    EnvObject::updateFlowfield(userFlowField + simulationFlowField + EnvObject::scenario.computeStorm(userFlowField.getDimensions()));
+    EnvObject::updateFlowfield(userFlowField + simulationFlowField); //+ EnvObject::scenario.computeStorm(userFlowField.getDimensions()));
     GridV3& flow = EnvObject::flowfield;
-    // return Plotter::get()->computeVectorFieldRendering(flow, 1/10.f, flow.getDimensions()  * 2.f).resize(flow.getDimensions());
-    return Plotter::get("Flowfield")->computeStreamLinesRendering(flow, flow.getDimensions()  * 3.f);
+    //return Plotter::get()->computeVectorFieldRendering(flow, 1/10.f, flow.getDimensions()  * 2.f).resize(flow.getDimensions());
+    return Plotter::get("Flowfield")->computeVectorFieldRendering(flow, 0.1f, flow.getDimensions()  * 3.f);
 }
 
 void EnvObjsInterface::previewCurrentEnvObjectPlacement(Vector3 position)

@@ -111,7 +111,7 @@ QLayout *EnvObjectFluidSimulation::createGUI()
 
 void EnvObjectFluidSimulation::updateVectorsMesh()
 {
-    GridV3 velocities = EnvObject::flowfield.resize(Vector3(50, 50, 1));
+    GridV3 velocities = EnvObject::flowfield.resize(Vector3(100, 100, 1)); // (50,50,1) à l'origine
     Mesh::createVectorField(velocities, this->voxelGrid->getDimensions(), &vectorsMesh, 1.f, false, true);
 }
 

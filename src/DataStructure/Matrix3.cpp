@@ -39,6 +39,51 @@ Matrix3<Vector3> Matrix3<Vector3>::rot() const {
 }
 
 template<>
+void Matrix3<Vector3>::drawLine(const Vector3& from, const Vector3& to, const Vector3& color) {
+    Vector3 directionVector = to - from;
+    float length = directionVector.norm();
+    if(length < 1e-5) return;
+    Vector3 step = directionVector / length;
+    for(float t = 0; t < length; t += 0.5f) {
+        Vector3 p = from + step * t;
+        Vector3 pi = p.rounded();
+        if (pi < this->getDimensions()) {
+            (*this)(pi) = color;
+        }
+    }
+}
+
+template<>
+Vector3 Matrix3<Vector3>::getMeanFieldDirection() const {
+     // Dumbest method
+    size_t fieldSize = this->size();
+    if (fieldSize == 0) return Vector3(0, 0, 0);
+    Vector3 sumVecs(0.0f);
+    for(size_t i = 0; i < fieldSize; ++i) {
+        sumVecs += at(i);
+    }
+    return sumVecs / fieldSize;
+}
+
+template<>
+Vector3 Matrix3<Vector3>::getMeanFieldDirectionWeighted() const {
+    Vector3 weightedSum(0.0f);
+    double totalWeight = 0.0;
+    size_t fieldSize = this->size();
+    for(size_t i = 0; i < fieldSize; ++i) {
+        Vector3 vec = at(i);
+        double magnitude = vec.norm();
+        if (magnitude > 1e-6) {
+            double weight = magnitude * magnitude;
+            weightedSum += vec.normalized() * weight;
+            totalWeight += weight;
+        }
+    }
+    
+    return totalWeight > 0 ? (weightedSum / totalWeight).normalized() : Vector3(0,0,0);
+}
+
+template<>
 Matrix3<int> Matrix3<int>::skeletonize() const
 {
     Matrix3<int> self = ((Matrix3<float>)*this).binarize(0.5f);

@@ -402,26 +402,45 @@ GridV3 Plotter::computeVectorFieldRendering(const GridV3 &field, float reduction
     maxMag = std::sqrt(maxMag);
 
     // std::cout << minMag << " " << maxMag << std::endl;
-
+    int count = 0;
     reduced.iterateParallel([&] (const Vector3& p) {
         AABBox cell(p - Vector3(.45, .45, 0) * ratio, p + Vector3(.45, .45, 0) * ratio);
         float mag = reduced(p).norm();
-        if (mag < 1e-5) return;
+        if (mag < 1e-10) {
+            // count++;
+            // std::cout<<mag<<std::endl;
+            // std::cout<<"ZERO VECTOR FOUND"<<std::endl;
+            return;
+        }
         Vector3 dir = reduced(p) / mag;
         Vector3 color(1, 1, 1);
         if (std::abs(minMag - maxMag) > 1e-5) {
             float relativeMag = interpolation::linear(mag, minMag, maxMag);
             color = colorPalette(relativeMag, {Vector3(0, 0, 1), Vector3(1, 1, 1), Vector3(1, 0, 0)});
         }
-        bool valid = true;
-        for (int i = 0; valid; i++) {
-            valid = false;
-            if (cell.containsXY(p + dir * i)) {
-                img((p + Vector3(.5, .5)) * ratio + dir * i) = color;
-                valid = true;
-            }
-        }
+        // bool valid = true;
+        // for (int i = 0; valid; i++) {
+        //     valid = false;
+        //     if (cell.containsXY(p + dir * i)) {
+        //         img((p + Vector3(.5, .5)) * ratio + dir * i) = color;
+        //         valid = true;
+        //     }
+        // }
+
+        Vector3 start = (p + Vector3(0.5, 0.5, 0)) * ratio;
+        Vector3 end = start + dir * ratio.x * 0.4f;
+        img.drawLine(start, end, color);
+
+        Vector3 perp(-dir.y, dir.x, 0); // Perpendiculaire
+        float arrowSize = ratio.x / 10.0f;
+
+        Vector3 left = end - dir * arrowSize + perp * arrowSize * 0.5f;
+        Vector3 right = end - dir * arrowSize - perp * arrowSize * 0.5f;
+
+        img.drawLine(end, left, color);
+        img.drawLine(end, right, color);
     });
+    std::cout<<"COUNT : "<<count<<std::endl;
     return img;
 }
 

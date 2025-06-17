@@ -8,6 +8,7 @@ class Kelvinlet
 {
 public:
     Kelvinlet();
+    virtual ~Kelvinlet() = default;
 
     virtual Vector3 evaluate(const Vector3& p) const = 0;
 

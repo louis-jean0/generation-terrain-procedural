@@ -8,7 +8,6 @@ AdjencySolver::AdjencySolver()
 
 }
 
-
 void completeAdjenciesWithRandomNeighbors(std::vector<ID>& bestCombinationYet, std::vector<std::vector<ID>>& neighbors, std::vector<std::vector<ID>>& possibleIdPerNeighborId) {
     size_t numberOfPossibleBiomes = bestCombinationYet.size();
     size_t numberOfNodes = bestCombinationYet.size();

@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
     qDebug() << "Context valid: " << context->isValid();
     qDebug() << "Really used OpenGl: " << context->format().majorVersion() << "." << context->format().minorVersion();
     qDebug() << "OpenGl information: VENDOR:       " << (const char*)glGetString(GL_VENDOR);
-    qDebug() << "                    RENDERDER:    " << (const char*)glGetString(GL_RENDERER);
+    qDebug() << "                    RENDERER:    " << (const char*)glGetString(GL_RENDERER);
     qDebug() << "                    VERSION:      " << (const char*)glGetString(GL_VERSION);
     qDebug() << "                    GLSL VERSION: " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
@@ -641,26 +641,78 @@ int main(int argc, char *argv[])
     // img = img.fillWithBSplines(splines);
     // Plotter::get()->addImage(img)->setNormalizedModeImage(true)->exec();
 
-    /* Unit test vector field plot */
-    GridV3 testVectorField(100,100,1,Vector3(0.0f,1.0f,0.0f));
+    /* Unit test Matrix3<Vector3>::drawLine */
+    // int size = 500;
+    // Vector3 color(1.0f, 0.0f, 0.0f);
+    // GridV3 testDrawLine(size, size, 1);
+    // Vector3 start = Vector3(0.1f, 0.5f, 0.0f) * size;;
+    // Vector3 end = Vector3(0.9f, 0.5f, 0.0f) * size;
+    // testDrawLine.drawLine(start, end, color);
+    // Vector3 dir = (end - start).normalize();
+    // Vector3 perp(-dir.y, dir.x, 0); // Perpendiculaire
+    // float arrowSize = 10.0f;
 
-       TwistKelvinlet* t0 = new TwistKelvinlet();
-       TranslateKelvinlet* t1 = new TranslateKelvinlet();
-       ScaleKelvinlet* t2 = new ScaleKelvinlet();
-        PinchKelvinlet* t3 = new PinchKelvinlet();
-        Vector3 offset(1,1,1);
-        t0->pos = Vector3(50,50,1);
-//        center = mousePos;
-//        t->force = Vector3(0, 0, -offset.getSignedAngleWith(Vector3(1, 0, 0)));
-        t0->force = offset * 10.f; //Vector3(0, s, 0);
-        // t->force = Vector3(20, 0, 0);
-//        t->scale = offset.norm();
-        t0->radialScale = 5.0f;
-        testVectorField.iterateParallel([&](Vector3 p) {
-            testVectorField[p] = t0->evaluate(p);
-        });
-        Plotter::get()->addVectorField(testVectorField)->exec();
-    
+    // Vector3 tip = end;
+    // Vector3 left = tip - dir * arrowSize + perp * arrowSize * 0.5f;
+    // Vector3 right = tip - dir * arrowSize - perp * arrowSize * 0.5f;
+
+    // testDrawLine.drawLine(tip, left, color);
+    // testDrawLine.drawLine(tip, right, color);
+    // Plotter::get()->resize(QSize(2000, 2000));
+    // Plotter::get()->addImage(testDrawLine)->exec();
+
+    /* Unit test kelvinlets on vector field */
+    // int size = 500;
+    // GridV3 testVectorField(size,size,1,Vector3(0.0f,1.0f,0.0f));
+
+    // TwistKelvinlet* t0 = new TwistKelvinlet();
+    // TranslateKelvinlet* t1 = new TranslateKelvinlet();
+    // ScaleKelvinlet* t2 = new ScaleKelvinlet();
+    // PinchKelvinlet* t3 = new PinchKelvinlet();
+    // Vector3 offset(1,1,1);
+    // // t1->pos = Vector3(size/2,size/2,1);
+    // // t1->force = offset * 0.1f;
+    // // t1->radialScale = 1.0f;
+    // // t1->mu = 0.9f;
+    // // t1->v = 0.0f;
+    // t3->pos = Vector3(size/2,size/2,1);
+    // t3->force = offset * 1.0f;
+    // t3->radialScale = 0.0f;
+    // //t2->scale = 1.0f;
+    // testVectorField.iterateParallel([&](Vector3 p) {
+    //     //testVectorField[p] = t1->evaluate(p);
+    // });
+    // testVectorField.iterateParallel([&](Vector3 p) {
+    //     testVectorField[p] = t3->evaluate(p);
+    // });
+    // Plotter::get()->resize(QSize(2000,2000));
+    // Plotter::get()->addVectorField(testVectorField, 0.1f, testVectorField.getDimensions() * 3)->exec();
+
+    /* Unit test mean direction of field */
+    int size = 500;
+    GridV3 testVectorField(size,size,1,Vector3(0.0f,1.0f,0.0f));
+    ScaleKelvinlet* t2 = new ScaleKelvinlet();
+    Vector3 offset(1,1,1);
+    t2->pos = Vector3(size/2,size/2,1);
+    t2->scale = 1.0f;
+    t2->radialScale = 1.0f;
+    t2->mu = 0.9f;
+    t2->v = 0.0f;
+    testVectorField.iterateParallel([&](Vector3 p) {
+        //testVectorField[p] = t2->evaluate(p);
+    });
+    Plotter::get()->resize(QSize(2000,2000));
+    Plotter::get()->addVectorField(testVectorField, 0.1f, testVectorField.getDimensions() * 3)->exec();
+    Plotter::get()->reset();
+    GridV3 testMeanDirection(size, size, 1, Vector3(0.0f, 0.0f, 0.0f));
+    Vector3 meanDirection = testVectorField.getMeanFieldDirectionWeighted();
+    std::cout<<"Mean direction valid : "<<meanDirection.isValid()<<std::endl;
+    std::cout<<"Mean direction: " << meanDirection << std::endl;
+    testMeanDirection.iterateParallel([&](const Vector3& p) {
+        testMeanDirection(p) = meanDirection;
+    });
+    Plotter::get()->resize(QSize(2000,2000));
+    Plotter::get()->addVectorField(testMeanDirection, 0.1f, testMeanDirection.getDimensions() * 3)->exec();
 
     //OpenFoamParser::createSimulationFile("OpenFOAM/simple", GridF());
     //return 0;
@@ -2752,7 +2804,6 @@ int main(int argc, char *argv[])
     // Plotter::get()->addImage(img);
     // return Plotter::get()->exec();
     // return 0;
-
 
     EnvObject::readEnvMaterialsFile("EnvObjects/envMaterials.json");
     EnvObject::readEnvObjectsFile("EnvObjects/primitives.json");

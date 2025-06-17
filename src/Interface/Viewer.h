@@ -180,6 +180,7 @@ public:
 //    Mesh raymarchingQuad;
 
     GLuint fbo, texture;
+    QOpenGLDebugLogger* debugLogger = nullptr;
 
     int currentWidth = -1;
     int currentHeight = -1;

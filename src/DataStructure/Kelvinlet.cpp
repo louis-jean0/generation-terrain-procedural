@@ -139,11 +139,10 @@ Vector3 PinchKelvinlet::evaluate(const Vector3 &p) const
     Matrix second = (rFrI + F * a * epsilon * epsilon).product(r) * (3.f/(2.f * repsilon3*repsilon*repsilon));
 
     const auto force = first - second;
-
-    return Vector3::fromMatrix(force);
+    Vector3 result = Vector3::fromMatrix(force);
+    //result.z = 0; // UNIQUEMENT POUR TESTER
+    return result;
 }
-
-
 
 KelvinletCurve::KelvinletCurve()
     : Kelvinlet()

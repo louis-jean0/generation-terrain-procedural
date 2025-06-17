@@ -71,6 +71,8 @@ public:
     std::vector<InstantiationMeshOption> meshesOptions;
 
     HotreloadFile meshInstancesFile;
+    std::atomic<bool> meshesReady{false};
+    std::mutex meshesMutex;
 
     bool displayEnvObjects = true;
 
