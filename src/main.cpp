@@ -689,30 +689,100 @@ int main(int argc, char *argv[])
     // Plotter::get()->addVectorField(testVectorField, 0.1f, testVectorField.getDimensions() * 3)->exec();
 
     /* Unit test mean direction of field */
-    int size = 500;
-    GridV3 testVectorField(size,size,1,Vector3(0.0f,1.0f,0.0f));
-    ScaleKelvinlet* t2 = new ScaleKelvinlet();
-    Vector3 offset(1,1,1);
-    t2->pos = Vector3(size/2,size/2,1);
-    t2->scale = 1.0f;
-    t2->radialScale = 1.0f;
-    t2->mu = 0.9f;
-    t2->v = 0.0f;
-    testVectorField.iterateParallel([&](Vector3 p) {
-        //testVectorField[p] = t2->evaluate(p);
-    });
-    Plotter::get()->resize(QSize(2000,2000));
-    Plotter::get()->addVectorField(testVectorField, 0.1f, testVectorField.getDimensions() * 3)->exec();
-    Plotter::get()->reset();
-    GridV3 testMeanDirection(size, size, 1, Vector3(0.0f, 0.0f, 0.0f));
-    Vector3 meanDirection = testVectorField.getMeanFieldDirectionWeighted();
-    std::cout<<"Mean direction valid : "<<meanDirection.isValid()<<std::endl;
-    std::cout<<"Mean direction: " << meanDirection << std::endl;
-    testMeanDirection.iterateParallel([&](const Vector3& p) {
-        testMeanDirection(p) = meanDirection;
-    });
-    Plotter::get()->resize(QSize(2000,2000));
-    Plotter::get()->addVectorField(testMeanDirection, 0.1f, testMeanDirection.getDimensions() * 3)->exec();
+    // int size = 500;
+    // GridV3 testVectorField(size,size,1,Vector3(0.0f,1.0f,0.0f));
+    // ScaleKelvinlet* t2 = new ScaleKelvinlet();
+    // Vector3 offset(1,1,1);
+    // t2->pos = Vector3(size/2,size/2,1);
+    // t2->scale = 1.0f;
+    // t2->radialScale = 1.0f;
+    // t2->mu = 0.9f;
+    // t2->v = 0.0f;
+    // testVectorField.iterateParallel([&](Vector3 p) {
+    //     //testVectorField[p] = t2->evaluate(p);
+    // });
+    // Plotter::get()->resize(QSize(2000,2000));
+    // Plotter::get()->addVectorField(testVectorField, 0.1f, testVectorField.getDimensions() * 3)->exec();
+    // Plotter::get()->reset();
+    // GridV3 testMeanDirection(size, size, 1, Vector3(0.0f, 0.0f, 0.0f));
+    // Vector3 meanDirection = testVectorField.getMeanFieldDirectionWeighted();
+    // std::cout<<"Mean direction valid : "<<meanDirection.isValid()<<std::endl;
+    // std::cout<<"Mean direction: " << meanDirection << std::endl;
+    // testMeanDirection.iterateParallel([&](const Vector3& p) {
+    //     testMeanDirection(p) = meanDirection;
+    // });
+    // Plotter::get()->resize(QSize(2000,2000));
+    // Plotter::get()->addVectorField(testMeanDirection, 0.1f, testMeanDirection.getDimensions() * 3)->exec();
+
+    /* Unit test: Kelvinlets on a vector field */
+    // Vector3 size = Vector3(1000, 1000, 1);
+    // Vector3 center = size.xy() * .5f;
+
+    // GridV3 initialVectorField(size.x, size.y, 1, Vector3(0.0f, 1.0f, 0.0f));
+    // // initialVectorField.iterateParallel([&](const Vector3& p) {
+    // //     Vector3 offset = p - center;
+    // //     float angle = offset.norm() * 0.01f;
+    // //     initialVectorField(p) = Vector3(std::cos(angle), std::sin(angle), 0.0f);
+    // // });
+
+    // std::vector<Kelvinlet*> operations;
+
+    // auto f = [&](float r, float s, const Vector3& mousePos) {
+    //     PinchKelvinlet* t = new PinchKelvinlet;
+    //     // TwistKelvinlet* t = new TwistKelvinlet;
+    //     // TranslateKelvinlet* t = new TranslateKelvinlet;
+    //     // ScaleKelvinlet* t = new ScaleKelvinlet;
+        
+    //     Vector3 offset = (mousePos - center);
+    //     t->pos = center;
+    //     t->force = offset * 10.f;
+    //     t->radialScale = r;
+    //     std::cout << "Force : " << t->force << ", radial scale : " << r << std::endl;
+
+    //     for (auto& op : operations)
+    //         delete op;
+    //     operations.clear();
+    //     operations.push_back(t);
+
+    //     GridV3 deformedVectorField(size);
+    //     displayProcessTime("Computing " + std::to_string(operations.size()) + " operations... ", [&]() {
+    //         deformedVectorField.iterateParallel([&](const Vector3& p) {
+    //             if (p == center) {
+    //                 deformedVectorField(p) = initialVectorField(p);
+    //                 return;
+    //             }
+
+    //             Vector3 pos = p;
+    //             for (int i = operations.size() - 1; i >= 0; i--) {
+    //                 const auto& op = operations[i];
+    //                 Vector3 warp = op->evaluate(pos);
+    //                 pos -= warp;
+    //             }
+
+    //             deformedVectorField(p) = initialVectorField.interpolate(pos);
+    //         });
+    //     });
+
+    //     Plotter::get()->reset();
+    //     Plotter::get()->addVectorField(deformedVectorField, 0.1f, deformedVectorField.getDimensions() * 3);
+    //     Plotter::get()->show();
+    // };
+
+    // QObject::connect(Plotter::get()->chartView, &ChartView::mouseMoved, [&](Vector3 p) {
+    //     float r = p.x * 50.f;
+    //     float s = p.y * 1.f * size.y;
+    //     f(r, s, p * size);
+    // });
+
+    // QObject::connect(Plotter::get(), &Plotter::clickedOnImage, [&](const Vector3& clickPos, Vector3 value) {
+    //     center = clickPos;
+    //     std::cout << "New center : " << center << std::endl;
+    // });
+
+    // Plotter::get()->resize(QSize(2000, 2000));
+    // f(10, 0, center + Vector3(0, 10, 0));
+
+    // return Plotter::get()->exec();
 
     //OpenFoamParser::createSimulationFile("OpenFOAM/simple", GridF());
     //return 0;

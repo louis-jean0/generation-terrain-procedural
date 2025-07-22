@@ -30,7 +30,7 @@ std::map<std::string, GridF> EnvObject::allScalarProperties;
 
 GridV3 initFlow(bool force) {
     if (force || EnvObject::flowfield.empty()) {
-        EnvObject::initialFlowfield = GridV3(100, 100, 1, Vector3(1.0f, 0, 0)); // (100, 100, 1) à l'origine
+        EnvObject::initialFlowfield = GridV3(200, 200, 1, Vector3(1.0f, 0, 0)); // (100, 100, 1) à l'origine
         EnvObject::initialFlowfield.raiseErrorOnBadCoord = false;
         EnvObject::initialFlowfield.returned_value_on_outside = RETURN_VALUE_ON_OUTSIDE::REPEAT_VALUE;
         EnvObject::flowfield = EnvObject::initialFlowfield;

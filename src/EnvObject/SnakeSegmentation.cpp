@@ -241,7 +241,6 @@ BSpline SnakeSegmentation::updateContour(const BSpline &currentContour, float st
         }
     }*/
 
-
     std::vector<Vector3> internalGradients(numPoints);
     std::vector<Vector3> externalGradients(numPoints);
     std::vector<Vector3> shapeGradients(numPoints);

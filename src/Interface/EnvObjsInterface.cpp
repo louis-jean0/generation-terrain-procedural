@@ -669,7 +669,7 @@ EnvObject* EnvObjsInterface::instantiateSpecific(std::string objectName, GridF s
 
         bool possible = true;
         if (score.empty())
-            score = computeScoreMap(objectName, EnvObject::flowfield.getDimensions(), possible) * focusedArea;
+            score = computeScoreMap(objectName, focusedArea.getDimensions(), possible) * focusedArea;
         score.raiseErrorOnBadCoord = false;
         score.returned_value_on_outside = RETURN_VALUE_ON_OUTSIDE::MIRROR_VALUE;
 
@@ -1996,7 +1996,7 @@ void EnvObjsInterface::addObjectsHeightmaps()
             GridF grid = GridF(subsidedHeightmap.getDimensions(), 0.f);
             grid = grid.paste(obj->createHeightfield() * obj->computeGrowingState2(), patch->position.xy());
             if (flowErosionFactor != 0 && EnvObject::materials.count(toLower(stringFromMaterial(obj->material)))) {
-                grid = grid.warpWith(EnvObject::flowfield * flowErosionFactor * EnvObject::materials[toLower(stringFromMaterial(obj->material))].waterTransport, 10);
+                grid = grid.warpWith((EnvObject::flowfield * flowErosionFactor * EnvObject::materials[toLower(stringFromMaterial(obj->material))].waterTransport).resize(grid.getDimensions()), 10); // Enlever le resize si jamais
             }
             if (obj->heightFrom == EnvObject::HeightmapFrom::SURFACE) {
                 surfaceHeights = (surfaceHeights + grid * (isIn(obj->material, LayerBasedGrid::invisibleLayers) ? -1.f : 1.f)).max(-15.f);

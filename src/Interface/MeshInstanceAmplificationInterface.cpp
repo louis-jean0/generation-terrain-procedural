@@ -8,22 +8,6 @@
 
 #include "Interface/TerrainGenerationInterface.h"
 
-// MeshInstanceAmplificationInterface::MeshInstanceAmplificationInterface(QWidget* parent)
-//     : ActionInterface("meshinstance", "Mesh Instance Amplification", "view", "Amplify the terrain with meshes", "amplification_instances.png", parent)
-// {
-//     meshInstancesFile.path = "EnvObjects/meshInstances.json";
-//     meshInstancesFile.onChange([&](std::string content) {
-//         this->readMeshInstanceFile(content);
-//     });
-
-//     QTimer* hotreloadTimer = new QTimer(this);
-//     hotreloadTimer->setInterval(500);
-//     QObject::connect(hotreloadTimer, &QTimer::timeout, this, [&]() {
-//         meshInstancesFile.check();
-//     });
-//     hotreloadTimer->start();
-// }
-
 MeshInstanceAmplificationInterface::MeshInstanceAmplificationInterface(QWidget* parent)
     : ActionInterface("meshinstance", "Mesh Instance Amplification", "view", "Amplify the terrain with meshes", "amplification_instances.png", parent)
 {
